@@ -1,0 +1,7 @@
+name: "ablations"
+stream: "SEA_recurring"
+seeds: [42, 43, 44]
+detectors: ["adwin", "kswin", "ddm"]
+matching_modes: ["error", "fingerprint"]
+selection_strategies: ["reservoir", "herding", "diverse"]
+max_samples: 10000

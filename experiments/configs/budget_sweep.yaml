@@ -1,0 +1,7 @@
+name: "budget_sweep"
+methods: ["B3", "E"]
+stream: "SEA_recurring"
+budgets: [100, 250, 500, 1000]
+seeds: [42, 43, 44]
+replay_batch: 8
+max_samples: 10000

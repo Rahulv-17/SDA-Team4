@@ -1,0 +1,30 @@
+\begin{table}
+\caption{Quantitative Main Comparison across Benchmark Streams}
+\label{tab:main_results}
+\begin{tabular}{llllllll}
+\toprule
+Stream & Method & Accuracy & Macro F1 & Recovery Time & Forgetting Drop & Latency & Memory \\
+\midrule
+Elec2 & B0 & 86.08 ± 0.00% & 0.858 ± 0.000 & 0.0 & 0.00% & 0.022 ms & 6.9 KB \\
+Elec2 & B1 & 87.48 ± 0.19% & 0.873 ± 0.002 & 0.0 & 0.00% & 0.118 ms & 265.8 KB \\
+Elec2 & B2 & 84.35 ± 0.21% & 0.840 ± 0.002 & 0.0 & 0.00% & 0.031 ms & 265.8 KB \\
+Elec2 & B3 & 83.71 ± 0.31% & 0.834 ± 0.003 & 0.0 & 0.00% & 0.117 ms & 205.1 KB \\
+Elec2 & E & 85.20 ± 0.06% & 0.850 ± 0.001 & 0.0 & 0.00% & 0.138 ms & 318.9 KB \\
+SEA_abrupt & B0 & 95.60 ± 0.17% & 0.951 ± 0.002 & 0.0 & 0.00% & 0.015 ms & 6.0 KB \\
+SEA_abrupt & B1 & 93.67 ± 0.25% & 0.931 ± 0.003 & 0.0 & 0.00% & 0.083 ms & 233.2 KB \\
+SEA_abrupt & B2 & 96.37 ± 0.38% & 0.960 ± 0.004 & 13.8 & 0.00% & 0.024 ms & 233.2 KB \\
+SEA_abrupt & B3 & 95.84 ± 0.52% & 0.955 ± 0.006 & 0.0 & 0.00% & 0.086 ms & 233.2 KB \\
+SEA_abrupt & E & 95.56 ± 1.34% & 0.951 ± 0.015 & 0.0 & 0.00% & 0.094 ms & 361.9 KB \\
+SEA_recurring & B0 & 97.42 ± 0.15% & 0.971 ± 0.002 & 0.0 & 1.60% & 0.017 ms & 7.4 KB \\
+SEA_recurring & B1 & 94.66 ± 0.19% & 0.940 ± 0.002 & 0.0 & 0.91% & 0.090 ms & 234.2 KB \\
+SEA_recurring & B2 & 97.20 ± 0.42% & 0.968 ± 0.005 & 0.0 & 1.72% & 0.028 ms & 233.4 KB \\
+SEA_recurring & B3 & 96.38 ± 0.13% & 0.959 ± 0.001 & 0.0 & 1.15% & 0.087 ms & 233.2 KB \\
+SEA_recurring & E & 96.55 ± 0.37% & 0.961 ± 0.004 & 0.0 & 1.32% & 0.095 ms & 307.4 KB \\
+STAGGER_recurring & B0 & 83.03 ± 0.94% & 0.788 ± 0.015 & 0.0 & -19.92% & 0.015 ms & 6.0 KB \\
+STAGGER_recurring & B1 & 71.52 ± 1.56% & 0.676 ± 0.015 & 0.0 & -10.67% & 0.074 ms & 163.1 KB \\
+STAGGER_recurring & B2 & 75.58 ± 1.18% & 0.743 ± 0.012 & 372.9 & -2.64% & 0.031 ms & 163.1 KB \\
+STAGGER_recurring & B3 & 88.64 ± 1.22% & 0.868 ± 0.014 & 0.0 & -12.74% & 0.082 ms & 137.9 KB \\
+STAGGER_recurring & E & 91.58 ± 0.96% & 0.902 ± 0.011 & 0.0 & -10.19% & 0.093 ms & 215.8 KB \\
+\bottomrule
+\end{tabular}
+\end{table}

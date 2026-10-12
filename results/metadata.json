@@ -1,0 +1,9 @@
+{
+  "timestamp": "2026-10-12 16:47:20",
+  "platform": "Windows-11-10.0.26300-SP0",
+  "python_version": "3.12.4",
+  "river_version": "0.26.1",
+  "sklearn_version": "1.8.0",
+  "numpy_version": "2.2.6",
+  "pandas_version": "2.2.3"
+}

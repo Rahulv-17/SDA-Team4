@@ -1,0 +1,71 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "liveNow": true,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "id": 1,
+      "title": "Prequential Rolling Accuracy & Drift Events",
+      "type": "timeseries",
+      "targets": [
+        {
+          "query": "from(bucket: \"streaming_metrics\") |> range(start: -15m) |> filter(fn: (r) => r._measurement == \"stream_metrics\" and r._field == \"rolling_acc\")",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "id": 2,
+      "title": "Recurring Concept Hits & Concept IDs",
+      "type": "timeseries",
+      "targets": [
+        {
+          "query": "from(bucket: \"streaming_metrics\") |> range(start: -15m) |> filter(fn: (r) => r._measurement == \"stream_metrics\" and r._field == \"concept_id\")",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "id": 3,
+      "title": "Memory Footprint (Bytes) vs Budget",
+      "type": "timeseries",
+      "targets": [
+        {
+          "query": "from(bucket: \"streaming_metrics\") |> range(start: -15m) |> filter(fn: (r) => r._measurement == \"stream_metrics\" and r._field == \"mem_bytes\")",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "id": 4,
+      "title": "Per-Instance Prediction & Update Latency (ms)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "query": "from(bucket: \"streaming_metrics\") |> range(start: -15m) |> filter(fn: (r) => r._measurement == \"stream_metrics\" and r._field == \"latency_ms\")",
+          "refId": "A"
+        }
+      ]
+    }
+  ],
+  "refresh": "1s",
+  "schemaVersion": 39,
+  "tags": ["continual-learning", "concept-drift", "ioe413"],
+  "time": { "from": "now-15m", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "IOE413 Continual Learning Streaming Dashboard",
+  "version": 1
+}

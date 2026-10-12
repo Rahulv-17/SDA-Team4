@@ -1,0 +1,7 @@
+name: "main_comparison"
+methods: ["B0", "B1", "B2", "B3", "E"]
+streams: ["SEA_recurring", "SEA_abrupt", "STAGGER_recurring", "Elec2"]
+seeds: [42, 43, 44, 45, 46]
+buffer_size: 500
+replay_batch: 8
+max_samples: 12000

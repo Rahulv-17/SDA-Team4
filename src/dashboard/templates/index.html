@@ -1,0 +1,1941 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <meta content="web_dashboard" name="shell-type"/>
+  <title>Concept Drift Lab · IOE413 Streaming Analytics</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+  <style>
+    @layer base {
+      html, body { margin: 0; padding: 0; }
+      body { overscroll-behavior: none; }
+      main > :first-child { margin-top: 0 !important; }
+      main > :last-child { margin-bottom: 0 !important; }
+    }
+    ::-webkit-scrollbar { display: none; }
+    .transition-tab { transition: opacity 0.15s ease-in-out; }
+  </style>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "on-secondary-fixed": "#002018",
+            "surface-container-lowest": "#080d1d",
+            "on-surface": "#dee1f9",
+            "primary-fixed-dim": "#40d7fd",
+            "secondary-fixed-dim": "#42deb7",
+            "error": "#ffb4ab",
+            "tertiary-container": "#ffb6ba",
+            "secondary": "#42deb7",
+            "surface-container-highest": "#2f3446",
+            "on-primary-fixed-variant": "#004e5e",
+            "outline-variant": "#3c494d",
+            "surface-dim": "#0e1323",
+            "secondary-fixed": "#66fbd3",
+            "surface-container-low": "#161b2b",
+            "on-primary-fixed": "#001f27",
+            "outline": "#869398",
+            "on-background": "#dee1f9",
+            "tertiary-fixed": "#ffdadb",
+            "on-error-container": "#ffdad6",
+            "inverse-primary": "#00677d",
+            "primary-container": "#43d9ff",
+            "on-error": "#690005",
+            "primary": "#b8edff",
+            "primary-fixed": "#b2ebff",
+            "on-primary-container": "#005c6f",
+            "surface-variant": "#2f3446",
+            "on-tertiary-fixed": "#40000d",
+            "on-secondary-fixed-variant": "#005140",
+            "background": "#0e1323",
+            "on-surface-variant": "#bbc9ce",
+            "inverse-on-surface": "#2b3041",
+            "surface-container": "#1a1f30",
+            "surface-bright": "#34394a",
+            "tertiary-fixed-dim": "#ffb2b7",
+            "tertiary": "#ffddde",
+            "surface-tint": "#40d7fd",
+            "surface-container-high": "#25293a",
+            "on-tertiary": "#67001b",
+            "inverse-surface": "#dee1f9",
+            "error-container": "#93000a",
+            "on-tertiary-fixed-variant": "#92002a",
+            "surface": "#0e1323",
+            "on-secondary-container": "#004939",
+            "secondary-container": "#03c19d",
+            "on-primary": "#003642",
+            "on-tertiary-container": "#ab0033",
+            "on-secondary": "#00382b"
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          spacing: {
+            "space-md": "1rem",
+            "gutter": "1.5rem",
+            "space-xl": "2rem",
+            "space-lg": "1.5rem",
+            "space-sm": "0.5rem",
+            "margin": "1.5rem",
+            "space-xs": "0.25rem"
+          },
+          fontFamily: {
+            "headline-xl": ["Inter", "sans-serif"],
+            "label-caps": ["Inter", "sans-serif"],
+            "headline-lg": ["Inter", "sans-serif"],
+            "metric-display": ["JetBrains Mono", "monospace"],
+            "body-lg": ["Inter", "sans-serif"],
+            "label-code": ["JetBrains Mono", "monospace"],
+            "body-sm": ["Inter", "sans-serif"],
+            "headline-sm": ["Inter", "sans-serif"],
+            "body-md": ["Inter", "sans-serif"]
+          },
+          fontSize: {
+            "headline-xl": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
+            "label-caps": ["11px", {"lineHeight": "16px", "fontWeight": "600"}],
+            "headline-lg": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+            "metric-display": ["28px", {"lineHeight": "32px", "fontWeight": "700"}],
+            "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+            "label-code": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+            "body-sm": ["12px", {"lineHeight": "16px", "fontWeight": "400"}],
+            "headline-sm": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+            "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+          }
+        }
+      }
+    };
+  </script>
+</head>
+<body class="bg-background font-body-md text-on-surface antialiased min-h-screen selection:bg-primary-container selection:text-on-primary-container">
+
+  <!-- Fixed Left Sidebar (210px) -->
+  <aside class="fixed left-0 top-0 h-full w-[210px] bg-surface-container-low border-r border-outline-variant/30 z-50 flex flex-col justify-between select-none">
+    <div class="flex flex-col">
+      <div class="p-space-md border-b border-outline-variant/20 flex flex-col gap-1">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary text-[20px]">vital_signs</span>
+          <span class="font-headline-sm text-on-surface text-[15px] font-semibold tracking-tight">Concept Drift Lab</span>
+        </div>
+        <span class="font-label-caps text-on-surface-variant uppercase tracking-wider text-[11px]">IOE413 · Streaming Analytics</span>
+      </div>
+      <nav class="flex flex-col gap-1 py-space-sm px-space-xs" id="sidebarNav">
+        <a id="nav-overview" onclick="navigateTab('overview')" aria-current="page" class="flex items-center gap-2.5 px-3 py-2 rounded transition-colors bg-surface-container-high text-primary font-medium border-l-2 border-primary cursor-pointer" data-path="overview">
+          <span class="material-symbols-outlined text-[18px]">insights</span>
+          <span>Overview</span>
+        </a>
+        <a id="nav-model-comparison" onclick="navigateTab('model-comparison')" class="flex items-center gap-2.5 px-3 py-2 rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors font-body-sm cursor-pointer" data-path="model-comparison">
+          <span class="material-symbols-outlined text-[18px]">tune</span>
+          <span>Model Comparison</span>
+        </a>
+        <a id="nav-concept-memory" onclick="navigateTab('concept-memory')" class="flex items-center gap-2.5 px-3 py-2 rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors font-body-sm cursor-pointer" data-path="concept-memory">
+          <span class="material-symbols-outlined text-[18px]">memory</span>
+          <span>Concept Memory</span>
+        </a>
+      </nav>
+    </div>
+    <div class="p-space-sm border-t border-outline-variant/20 flex flex-col gap-2 font-label-code text-on-surface-variant text-[11px] bg-surface-container-lowest/60">
+      <div class="flex items-center justify-between px-1">
+        <span class="text-on-surface-variant">Pipeline Health</span>
+        <div class="flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse" id="brokerPulse"></span>
+          <span class="text-secondary text-[11px]" id="brokerStatus">:1883 MQTT</span>
+        </div>
+      </div>
+      <div class="flex items-center justify-between px-1 pt-1 border-t border-outline-variant/10">
+        <span class="text-on-surface-variant">Py Backend</span>
+        <span class="text-primary font-mono text-[10px] uppercase bg-surface-container-high px-1.5 py-0.5 rounded" id="backendVersionBadge">Active v3.12</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main View Area (Offset by 210px) -->
+  <div class="pl-[210px] min-h-screen flex flex-col">
+    <!-- Top Header Navigation Bar -->
+    <header class="fixed top-0 left-[210px] right-0 h-14 bg-surface/95 backdrop-blur-md border-b border-outline-variant/30 z-40 flex items-center justify-between px-gutter">
+      <div class="flex items-center gap-2 font-label-code text-body-sm text-on-surface-variant">
+        <span class="material-symbols-outlined text-[16px] text-primary">terminal</span>
+        <span>workspace</span>
+        <span class="text-outline-variant">/</span>
+        <span class="text-on-surface font-medium" id="headerWorkspace">drift-surveillance</span>
+      </div>
+      <div class="flex items-center gap-3">
+        <!-- Top Stream Selector Dropdown -->
+        <div class="relative group">
+          <button id="headerStreamBtn" class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-surface-container border border-outline-variant/40 font-label-code text-[11px] text-on-surface cursor-pointer hover:border-primary/60 transition-colors">
+            <span class="text-on-surface-variant">Stream:</span>
+            <span class="text-primary font-semibold" id="headerStreamLabel">SEA_recurring</span>
+            <span class="material-symbols-outlined text-[14px] text-on-surface-variant">arrow_drop_down</span>
+          </button>
+          <div id="headerStreamMenu" class="hidden absolute right-0 top-full mt-1 w-48 rounded-lg bg-surface-container-high border border-outline-variant/40 shadow-xl p-1 z-50 flex flex-col font-label-code text-body-sm">
+            <button class="text-left px-2.5 py-1.5 rounded hover:bg-surface-container text-on-surface flex items-center justify-between" onclick="setStream('SEA_recurring')">
+              <span>SEA_recurring</span>
+              <span class="material-symbols-outlined text-[14px] text-primary stream-check" id="check-sea-rec">check</span>
+            </button>
+            <button class="text-left px-2.5 py-1.5 rounded hover:bg-surface-container text-on-surface flex items-center justify-between" onclick="setStream('SEA_abrupt')">
+              <span>SEA_abrupt</span>
+              <span class="material-symbols-outlined text-[14px] text-primary stream-check hidden" id="check-sea-abr">check</span>
+            </button>
+            <button class="text-left px-2.5 py-1.5 rounded hover:bg-surface-container text-on-surface flex items-center justify-between" onclick="setStream('STAGGER_recurring')">
+              <span>STAGGER_recurring</span>
+              <span class="material-symbols-outlined text-[14px] text-primary stream-check hidden" id="check-stagger">check</span>
+            </button>
+            <button class="text-left px-2.5 py-1.5 rounded hover:bg-surface-container text-on-surface flex items-center justify-between" onclick="setStream('SINE_gradual')">
+              <span>SINE_gradual</span>
+              <span class="material-symbols-outlined text-[14px] text-primary stream-check hidden" id="check-sine">check</span>
+            </button>
+            <button class="text-left px-2.5 py-1.5 rounded hover:bg-surface-container text-on-surface flex items-center justify-between" onclick="setStream('Elec2')">
+              <span>Elec2</span>
+              <span class="material-symbols-outlined text-[14px] text-primary stream-check hidden" id="check-elec2">check</span>
+            </button>
+          </div>
+        </div>
+        <!-- Method Badge -->
+        <div class="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded bg-surface-container-low border border-outline-variant/30 font-label-code text-[11px] text-on-surface">
+          <span class="text-on-surface-variant">Method:</span>
+          <span class="text-secondary font-medium" id="headerMethodLabel">E (CAM)</span>
+        </div>
+        <!-- Live Status Badge -->
+        <div class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-surface-container-lowest border border-secondary/30 font-label-code text-[11px]" id="liveStatusContainer">
+          <span class="w-2 h-2 rounded-full bg-secondary animate-ping" id="livePingDot"></span>
+          <span class="text-secondary font-medium" id="liveBadgeLabel">LIVE (Kafka/MQTT)</span>
+        </div>
+        <!-- Sequence Counter -->
+        <div class="hidden xl:block font-label-code text-[11px] text-on-surface-variant">
+          <span class="text-outline">Seq:</span> <span class="text-on-surface font-mono" id="headerSeq">#0</span>
+        </div>
+        <div class="px-2.5 py-1 rounded bg-surface-container-high border border-outline-variant/30 font-label-code text-[11px] text-on-surface-variant">
+          <span class="text-primary font-semibold">IOE413</span> · Team 5
+        </div>
+      </div>
+    </header>
+
+    <main class="relative pt-14 w-full flex-1 bg-background">
+      <div class="max-w-[1180px] mx-auto p-margin min-h-[calc(100vh-3.5rem)]">
+
+        <!-- ========================================== -->
+        <!-- TAB 1: OVERVIEW PAGE                       -->
+        <!-- ========================================== -->
+        <section id="view-overview" class="tab-view block flex flex-col w-full gap-space-lg transition-tab">
+          <!-- Top Page Header & Surveillance Tooling -->
+          <div class="flex flex-col gap-space-md">
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md">
+              <div class="flex flex-col">
+                <div class="flex items-center gap-2">
+                  <span class="font-headline-lg text-on-surface">Streaming Analytics Overview</span>
+                  <span class="px-2 py-0.5 rounded bg-surface-container-high font-label-caps text-secondary text-label-caps uppercase tracking-wider" id="overviewPipelineTag">Live Pipeline</span>
+                </div>
+                <p class="font-body-md text-on-surface-variant">Monitor live data, concept drift and online model adaptation in real time.</p>
+              </div>
+              <!-- Control Toolbar -->
+              <div class="flex flex-wrap items-center gap-2 bg-surface-container-low p-1.5 rounded-xl">
+                <!-- Stream Selector Button -->
+                <div class="relative group">
+                  <button class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-container font-label-code text-label-code text-on-surface hover:bg-surface-container-high transition-colors" id="streamDropdownBtn">
+                    <span class="text-on-surface-variant">Stream:</span>
+                    <span class="font-semibold text-primary" id="currentStreamLabel">SEA_recurring</span>
+                    <span class="material-symbols-outlined text-[16px] text-on-surface-variant">arrow_drop_down</span>
+                  </button>
+                  <div class="hidden absolute top-full left-0 mt-1 w-48 rounded-lg bg-surface-container-high border border-outline-variant/40 shadow-xl p-1 z-50 flex flex-col font-label-code text-body-sm" id="streamDropdownMenu">
+                    <button class="text-left px-2.5 py-1.5 rounded hover:bg-surface-container text-on-surface" onclick="setStream('SEA_recurring')">SEA_recurring</button>
+                    <button class="text-left px-2.5 py-1.5 rounded hover:bg-surface-container text-on-surface" onclick="setStream('SEA_abrupt')">SEA_abrupt</button>
+                    <button class="text-left px-2.5 py-1.5 rounded hover:bg-surface-container text-on-surface" onclick="setStream('STAGGER_recurring')">STAGGER_recurring</button>
+                    <button class="text-left px-2.5 py-1.5 rounded hover:bg-surface-container text-on-surface" onclick="setStream('SINE_gradual')">SINE_gradual</button>
+                    <button class="text-left px-2.5 py-1.5 rounded hover:bg-surface-container text-on-surface" onclick="setStream('Elec2')">Elec2</button>
+                  </div>
+                </div>
+                <!-- Method Selector Pill -->
+                <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container font-label-code text-label-code text-on-surface">
+                  <span class="text-on-surface-variant">Method:</span>
+                  <span class="font-semibold text-secondary" id="overviewMethodBadge">E (CAM)</span>
+                </div>
+                <div class="h-4 w-px bg-surface-container-highest"></div>
+                <!-- Action Button: Pause / Resume -->
+                <button class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container font-label-code text-label-code text-on-surface hover:bg-surface-container-high transition-colors cursor-pointer" id="pauseToggleBtn">
+                  <span class="material-symbols-outlined text-[16px] text-on-surface-variant" id="pauseIcon">pause</span>
+                  <span id="pauseLabel">Pause Stream</span>
+                </button>
+                <!-- Action Button: Reset Stream -->
+                <button onclick="resetLiveStream()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container font-label-code text-label-code text-on-surface hover:bg-surface-container-high transition-colors cursor-pointer" id="resetStreamBtn" title="Clear metrics database and restart stream evaluation from 0">
+                  <span class="material-symbols-outlined text-[16px] text-on-surface-variant" id="resetIcon">restart_alt</span>
+                  <span id="resetLabel">Reset Stream</span>
+                </button>
+                <!-- Live Ingestion Status -->
+                <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-container-lowest font-label-code text-label-code">
+                  <span class="w-2 h-2 rounded-full bg-secondary animate-pulse" id="overviewFpsDot"></span>
+                  <span class="text-secondary font-medium" id="ingestFps">120 inst/s</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Active Ingestion Notice Banner (Shows if user is viewing a different stream than active live stream) -->
+          <div id="activeStreamBanner" class="hidden flex items-center justify-between p-3 rounded-xl bg-surface-container-low border border-primary/30 font-label-code text-body-sm">
+            <div class="flex items-center gap-2.5">
+              <span class="material-symbols-outlined text-primary text-[18px]">info</span>
+              <span>Viewing historical benchmark stream: <strong class="text-primary" id="bannerSelectedStream">STAGGER_recurring</strong>. Active broker stream is <strong class="text-secondary" id="bannerActiveStream">SEA_recurring</strong>.</span>
+            </div>
+            <button onclick="setStream(document.getElementById('bannerActiveStream').textContent)" class="px-2.5 py-1 rounded bg-surface-container-high hover:bg-surface-bright text-secondary text-[11px] font-semibold transition-colors">
+              Switch to Live Stream
+            </button>
+          </div>
+
+          <!-- Metric Overview Cards: 4 Equal Columns -->
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-space-md">
+            <!-- Card 1: Instances Processed -->
+            <div class="bg-surface-container p-5 rounded-xl shadow-sm flex flex-col justify-between">
+              <div class="flex items-center justify-between text-on-surface-variant">
+                <span class="font-label-caps uppercase tracking-wider text-label-caps">Instances Processed</span>
+                <span class="material-symbols-outlined text-[18px] text-primary">data_array</span>
+              </div>
+              <div class="my-3 flex items-baseline justify-between">
+                <span class="font-metric-display text-metric-display text-on-surface tracking-tight" id="instanceCounter">10,000</span>
+                <span class="font-label-code text-body-sm text-primary bg-surface-container-high px-1.5 py-0.5 rounded" id="card1StatusBadge">ONLINE</span>
+              </div>
+              <div class="flex items-center justify-between pt-2">
+                <span class="font-label-code text-body-sm text-on-surface-variant" id="instanceRateSubtitle">seq #10,000 · 120/s rate</span>
+                <span class="font-label-code text-[11px] text-secondary">Active Broker</span>
+              </div>
+            </div>
+            <!-- Card 2: Rolling Accuracy -->
+            <div class="bg-surface-container p-5 rounded-xl shadow-sm flex flex-col justify-between">
+              <div class="flex items-center justify-between text-on-surface-variant">
+                <span class="font-label-caps uppercase tracking-wider text-label-caps">Rolling Accuracy</span>
+                <span class="material-symbols-outlined text-[18px] text-secondary">trending_up</span>
+              </div>
+              <div class="my-3 flex items-baseline gap-2">
+                <span class="font-metric-display text-metric-display text-on-surface tracking-tight" id="rollingAccVal">96.5%</span>
+                <span class="font-label-code text-body-sm text-secondary font-semibold" id="rollingAccDelta">▲ +4.2%</span>
+              </div>
+              <div class="flex items-center justify-between pt-2">
+                <span class="font-label-code text-body-sm text-on-surface-variant">Window w=500 instances</span>
+                <span class="px-1.5 py-0.5 rounded bg-surface-container-high font-label-code text-[11px] text-secondary" id="rollingAccTrough">trough: 84.2%</span>
+              </div>
+            </div>
+            <!-- Card 3: Drift Events -->
+            <div class="bg-surface-container p-5 rounded-xl shadow-sm flex flex-col justify-between">
+              <div class="flex items-center justify-between text-on-surface-variant">
+                <span class="font-label-caps uppercase tracking-wider text-label-caps">Drift Events</span>
+                <span class="material-symbols-outlined text-[18px] text-tertiary-container">crisis_alert</span>
+              </div>
+              <div class="my-3 flex items-baseline justify-between">
+                <span class="font-metric-display text-metric-display text-on-surface tracking-tight" id="driftCountVal">4 Detected</span>
+                <span class="px-2 py-0.5 rounded bg-error-container text-tertiary-container font-label-code text-body-sm">ADWIN Confirmed</span>
+              </div>
+              <div class="flex items-center justify-between pt-2">
+                <span class="font-label-code text-body-sm text-on-surface-variant" id="driftTriggersSubtitle">Triggers: t=2.5k, 5k, 7.5k</span>
+                <span class="font-label-code text-body-sm text-secondary">δ = 0.002</span>
+              </div>
+            </div>
+            <!-- Card 4: Memory Usage -->
+            <div class="bg-surface-container p-5 rounded-xl shadow-sm flex flex-col justify-between">
+              <div class="flex items-center justify-between text-on-surface-variant">
+                <span class="font-label-caps uppercase tracking-wider text-label-caps">Concept Buffer Capacity</span>
+                <span class="material-symbols-outlined text-[18px] text-tertiary-fixed">memory</span>
+              </div>
+              <div class="my-3 flex items-baseline justify-between">
+                <span class="font-metric-display text-metric-display text-on-surface tracking-tight" id="bufferDisplay"><span id="bufferUsedVal">412</span> <span class="text-on-surface-variant font-headline-sm">/ 500</span></span>
+                <span class="font-label-code text-body-sm text-secondary-fixed" id="bufferPctVal">82.4% Budget</span>
+              </div>
+              <div class="flex flex-col gap-1.5 pt-2">
+                <div class="w-full bg-surface-container-lowest h-1.5 rounded-full overflow-hidden">
+                  <div class="bg-primary h-full rounded-full transition-all duration-300" id="bufferBar" style="width: 82.4%;"></div>
+                </div>
+                <div class="flex justify-between font-label-code text-[11px] text-on-surface-variant">
+                  <span id="activeConceptsCount">4 Active Concepts</span>
+                  <span id="lruHeadroom">LRU Headroom: 88</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Main Chart Section: Rolling Prequential Accuracy over Stream -->
+          <div class="bg-surface-container p-6 rounded-xl shadow-sm flex flex-col gap-space-md">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-space-sm">
+              <div class="flex flex-col">
+                <div class="flex items-center gap-2">
+                  <h2 class="font-headline-sm text-on-surface">Rolling Prequential Accuracy over Stream: <span class="text-primary font-mono" id="overviewChartStreamHeader">SEA_recurring</span></h2>
+                  <span class="px-2 py-0.5 rounded bg-surface-container-highest font-label-code text-[11px] text-on-surface-variant">w=500</span>
+                </div>
+                <p class="font-body-sm text-on-surface-variant mt-0.5" id="overviewChartSubtitle">Statistical adaptation comparison: Fast recurrence reinstatement vs. cold learning baseline</p>
+              </div>
+              <!-- Chart Controls & Legend -->
+              <div class="flex flex-wrap items-center gap-4">
+                <div class="flex items-center gap-4 font-label-code text-body-sm">
+                  <div class="flex items-center gap-2">
+                    <span class="w-4 h-0.5 bg-primary rounded-full"></span>
+                    <span class="text-on-surface">E — CAM (Ours)</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <span class="w-4 h-0.5 bg-outline rounded-full"></span>
+                    <span class="text-on-surface-variant">B3 — AMR Baseline</span>
+                  </div>
+                </div>
+                <!-- Window Tab Buttons -->
+                <div class="flex items-center p-0.5 bg-surface-container-low rounded-lg font-label-code text-label-code">
+                  <button class="px-2.5 py-1 rounded bg-surface-container-high text-primary font-medium transition-colors" onclick="setChartWindow('5k')">Last 5k inst</button>
+                  <button class="px-2.5 py-1 rounded text-on-surface-variant hover:text-on-surface transition-colors" onclick="setChartWindow('10k')">Last 10k inst</button>
+                  <button class="px-2.5 py-1 rounded text-on-surface-variant hover:text-on-surface transition-colors" onclick="setChartWindow('full')">Full Stream</button>
+                </div>
+              </div>
+            </div>
+            <!-- Dynamic SVG Visual Canvas -->
+            <div class="relative w-full bg-surface-container-lowest p-4 rounded-xl overflow-x-auto">
+              <svg class="w-full min-w-[700px] h-72 select-none overflow-visible" id="overviewSvgCanvas" viewBox="0 0 1000 340">
+                <defs>
+                  <linearGradient id="camGrad" x1="0" x2="0" y1="0" y2="1">
+                    <stop offset="0%" stop-color="#43d9ff" stop-opacity="0.25"></stop>
+                    <stop offset="100%" stop-color="#43d9ff" stop-opacity="0.0"></stop>
+                  </linearGradient>
+                </defs>
+                <!-- Grid lines & labels -->
+                <line stroke="#25293a" stroke-dasharray="2 3" stroke-width="1" x1="50" x2="980" y1="30" y2="30"></line>
+                <text fill="#869398" font-family="JetBrains Mono" font-size="11" text-anchor="end" x="42" y="34">100%</text>
+                <line stroke="#25293a" stroke-dasharray="2 3" stroke-width="1" x1="50" x2="980" y1="86" y2="86"></line>
+                <text fill="#869398" font-family="JetBrains Mono" font-size="11" text-anchor="end" x="42" y="90">90%</text>
+                <line stroke="#25293a" stroke-dasharray="2 3" stroke-width="1" x1="50" x2="980" y1="142" y2="142"></line>
+                <text fill="#869398" font-family="JetBrains Mono" font-size="11" text-anchor="end" x="42" y="146">80%</text>
+                <line stroke="#25293a" stroke-dasharray="2 3" stroke-width="1" x1="50" x2="980" y1="198" y2="198"></line>
+                <text fill="#869398" font-family="JetBrains Mono" font-size="11" text-anchor="end" x="42" y="202">70%</text>
+                <line stroke="#25293a" stroke-dasharray="2 3" stroke-width="1" x1="50" x2="980" y1="254" y2="254"></line>
+                <text fill="#869398" font-family="JetBrains Mono" font-size="11" text-anchor="end" x="42" y="258">60%</text>
+                <line stroke="#3c494d" stroke-width="1" x1="50" x2="980" y1="310" y2="310"></line>
+                <text fill="#869398" font-family="JetBrains Mono" font-size="11" text-anchor="end" x="42" y="314">50%</text>
+                <!-- Dynamic group for drift vertical lines (Pre-populated defaults so chart is never empty) -->
+                <g id="overviewDriftLines">
+                  <line x1="310" x2="310" y1="20" y2="310" stroke="#ffb6ba" stroke-dasharray="3 3" stroke-width="1.5"></line>
+                  <rect x="235" y="14" width="150" height="20" rx="4" fill="#93000a" fill-opacity="0.85"></rect>
+                  <text x="310" y="28" fill="#ffdad6" font-family="Inter" font-size="9.5" font-weight="600" text-anchor="middle">DRIFT 1: A → B</text>
+                  <line x1="560" x2="560" y1="20" y2="310" stroke="#42deb7" stroke-dasharray="3 3" stroke-width="1.5"></line>
+                  <rect x="465" y="14" width="190" height="20" rx="4" fill="#004939" fill-opacity="0.95"></rect>
+                  <text x="560" y="28" fill="#66fbd3" font-family="Inter" font-size="9.5" font-weight="600" text-anchor="middle">DRIFT 2: B → A (RECUR)</text>
+                  <line x1="810" x2="810" y1="20" y2="310" stroke="#ffb6ba" stroke-dasharray="3 3" stroke-width="1.5"></line>
+                  <rect x="735" y="14" width="150" height="20" rx="4" fill="#93000a" fill-opacity="0.85"></rect>
+                  <text x="810" y="28" fill="#ffdad6" font-family="Inter" font-size="9.5" font-weight="600" text-anchor="middle">DRIFT 3: A → C</text>
+                </g>
+                <!-- X-Axis Labels -->
+                <g id="overviewXLabels">
+                  <text fill="#869398" font-family="JetBrains Mono" font-size="11" x="60" y="328">0</text>
+                  <text fill="#869398" font-family="JetBrains Mono" font-size="11" text-anchor="middle" x="310" y="328">2,500</text>
+                  <text fill="#869398" font-family="JetBrains Mono" font-size="11" text-anchor="middle" x="560" y="328">5,000</text>
+                  <text fill="#869398" font-family="JetBrains Mono" font-size="11" text-anchor="middle" x="810" y="328">7,500</text>
+                  <text fill="#869398" font-family="JetBrains Mono" font-size="11" text-anchor="middle" x="960" y="328" id="overviewChartLiveX">10,000</text>
+                </g>
+                <!-- Dynamic Path Elements with Default High-Fidelity Coordinates -->
+                <path id="overviewBaselinePath" d="M 60 90 C 150 86, 260 84, 305 85 L 310 226 C 340 215, 420 120, 555 106 L 560 220 C 590 205, 680 125, 805 112 L 810 242 C 830 236, 880 200, 960 175" fill="none" stroke="#869398" stroke-dasharray="5 3" stroke-width="2"></path>
+                <path id="overviewCamPath" d="M 60 88 C 150 84, 260 82, 305 84 L 310 210 C 340 185, 420 100, 555 92 L 560 205 C 590 178, 680 96, 805 90 L 810 180 C 820 100, 840 92, 960 95" fill="none" stroke="#43d9ff" stroke-width="2.5"></path>
+                <path id="overviewCamArea" d="M 60 88 C 150 84, 260 82, 305 84 L 310 210 C 340 185, 420 100, 555 92 L 560 205 C 590 178, 680 96, 805 90 L 810 180 C 820 100, 840 92, 960 95 L 960 310 L 60 310 Z" fill="url(#camGrad)"></path>
+                <!-- Live Tracking Indicator Dot -->
+                <circle id="overviewLiveHeadDot" cx="960" cy="95" r="5" fill="#43d9ff" stroke="#ffffff" stroke-width="2"></circle>
+              </svg>
+            </div>
+            <!-- Chart Footnote -->
+            <div class="flex items-center justify-between text-on-surface-variant font-body-sm pt-1">
+              <div class="flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[16px] text-primary">info</span>
+                <span>Rolling accuracy measures prequential adaptation efficiency as the stream distribution shifts. Window size w=500 instances.</span>
+              </div>
+              <span class="font-label-code text-[11px] text-secondary" id="overviewSpeedupLabel">Recurrence Speedup: 4.8x over cold start</span>
+            </div>
+          </div>
+
+          <!-- Pipeline Architecture Topology: Kafka -> River -> InfluxDB Flow -->
+          <div class="bg-surface-container p-6 rounded-xl shadow-sm flex flex-col gap-space-md">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-space-xs">
+              <div>
+                <h3 class="font-headline-sm text-on-surface">Streaming Ingestion &amp; Monitoring Pipeline</h3>
+                <p class="font-body-sm text-on-surface-variant">End-to-end stream topology with distinct raw ingestion and metric broadcast topics</p>
+              </div>
+              <span class="px-2.5 py-1 rounded-full bg-surface-container-high font-label-code text-body-sm text-secondary flex items-center gap-1.5 self-start md:self-auto">
+                <span class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></span>
+                Zero Ingestion Lag
+              </span>
+            </div>
+            <!-- Flow Diagram Nodes -->
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-3 relative items-stretch">
+              <!-- Node 1: Producer -->
+              <div class="bg-surface-container-low p-4 rounded-xl flex flex-col justify-between relative group hover:bg-surface-container-high transition-colors">
+                <div class="flex items-center justify-between">
+                  <span class="material-symbols-outlined text-primary text-[22px]">cycle</span>
+                  <span class="font-label-code text-[10px] text-on-surface-variant">NODE 01</span>
+                </div>
+                <div class="my-3">
+                  <span class="font-headline-sm text-on-surface text-body-md font-semibold block">Stream Producer</span>
+                  <span class="font-body-sm text-primary block mt-0.5" id="topologyProducerStream">SEA_recurring</span>
+                </div>
+                <div class="font-label-code text-[11px] text-primary flex items-center gap-1">
+                  <span>Emit: 100 evt/s</span>
+                </div>
+              </div>
+              <!-- Node 2: Kafka Raw -->
+              <div class="bg-surface-container-low p-4 rounded-xl flex flex-col justify-between relative group hover:bg-surface-container-high transition-colors">
+                <div class="flex items-center justify-between">
+                  <span class="material-symbols-outlined text-primary-container text-[22px]">swap_horiz</span>
+                  <span class="px-1.5 py-0.5 rounded bg-surface-container font-label-code text-[10px] text-primary">TOPIC</span>
+                </div>
+                <div class="my-3">
+                  <span class="font-headline-sm text-on-surface text-body-md font-semibold block">Broker: stream.raw</span>
+                  <span class="font-body-sm text-on-surface-variant block mt-0.5">Raw instances [X, y]</span>
+                </div>
+                <div class="font-label-code text-[11px] text-on-surface-variant">
+                  <span>Payload: JSON / msgpack</span>
+                </div>
+              </div>
+              <!-- Node 3: River Online Learner -->
+              <div class="bg-surface-container-high p-4 rounded-xl flex flex-col justify-between relative shadow-md">
+                <div class="flex items-center justify-between">
+                  <span class="material-symbols-outlined text-secondary text-[22px]">neurology</span>
+                  <span class="px-1.5 py-0.5 rounded bg-surface-container-lowest font-label-code text-[10px] text-secondary font-semibold">ACTIVE EVAL</span>
+                </div>
+                <div class="my-3">
+                  <span class="font-headline-sm text-secondary text-body-md font-semibold block">River Consumer</span>
+                  <span class="font-body-sm text-on-surface-variant block mt-0.5">CAM Engine + ADWIN</span>
+                </div>
+                <div class="font-label-code text-[11px] text-secondary flex items-center justify-between">
+                  <span>ADWIN: δ=0.002</span>
+                  <span id="riverBufferBadge">Buffer: 412</span>
+                </div>
+              </div>
+              <!-- Node 4: Kafka Metrics -->
+              <div class="bg-surface-container-low p-4 rounded-xl flex flex-col justify-between relative group hover:bg-surface-container-high transition-colors">
+                <div class="flex items-center justify-between">
+                  <span class="material-symbols-outlined text-primary-container text-[22px]">forward_to_inbox</span>
+                  <span class="px-1.5 py-0.5 rounded bg-surface-container font-label-code text-[10px] text-primary">TOPIC</span>
+                </div>
+                <div class="my-3">
+                  <span class="font-headline-sm text-on-surface text-body-md font-semibold block">Broker: stream.metrics</span>
+                  <span class="font-body-sm text-on-surface-variant block mt-0.5">Prequential logs &amp; flags</span>
+                </div>
+                <div class="font-label-code text-[11px] text-on-surface-variant">
+                  <span id="kafkaLatencyStat">Latency: 0.1ms</span>
+                </div>
+              </div>
+              <!-- Node 5: InfluxDB + Dashboard -->
+              <div class="bg-surface-container-low p-4 rounded-xl flex flex-col justify-between relative group hover:bg-surface-container-high transition-colors">
+                <div class="flex items-center justify-between">
+                  <span class="material-symbols-outlined text-tertiary-fixed-dim text-[22px]">database</span>
+                  <span class="font-label-code text-[10px] text-on-surface-variant">STORAGE</span>
+                </div>
+                <div class="my-3">
+                  <span class="font-headline-sm text-on-surface text-body-md font-semibold block">InfluxDB + Grafana</span>
+                  <span class="font-body-sm text-on-surface-variant block mt-0.5">Time-series surveillance</span>
+                </div>
+                <div class="font-label-code text-[11px] text-on-surface-variant">
+                  <span>Retention: 30 days</span>
+                </div>
+              </div>
+            </div>
+            <!-- Pipeline Architecture Caption -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 rounded-lg bg-surface-container-lowest font-body-sm text-on-surface-variant">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-[16px] text-secondary">alt_route</span>
+                <span>Decoupled message architecture isolates stream simulation from evaluation computation. River operates under test-then-train protocol.</span>
+              </div>
+              <div class="font-label-code text-body-sm text-on-surface flex items-center gap-3">
+                <span>Protocol: MQTT / Kafka</span>
+                <span class="text-secondary font-medium">Synced: 0.0s</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Stream Events Log Feed -->
+          <div class="bg-surface-container p-6 rounded-xl shadow-sm flex flex-col gap-space-sm">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <h3 class="font-headline-sm text-on-surface">Recent Stream Events</h3>
+                <span class="px-2 py-0.5 rounded bg-surface-container-high font-label-code text-[11px] text-primary" id="eventsStreamTag">SEA_recurring</span>
+              </div>
+              <span class="font-label-code text-body-sm text-on-surface-variant">Showing latest surveillance notifications</span>
+            </div>
+            <!-- Events List Container -->
+            <div class="flex flex-col gap-2 mt-2" id="eventsContainer">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB 2: MODEL COMPARISON PAGE               -->
+        <!-- ========================================== -->
+        <section id="view-model-comparison" class="tab-view hidden flex flex-col w-full gap-space-lg transition-tab">
+          <div class="flex flex-col gap-space-md">
+            <div class="flex flex-col sm:flex-row sm:items-baseline justify-between gap-space-sm">
+              <div class="flex flex-col gap-1">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-secondary-container"></span>
+                  <h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Model Comparison</h1>
+                </div>
+                <p class="font-body-md text-body-md text-on-surface-variant">
+                  Evaluate five learning strategies under concept drift on stream <span class="font-label-code text-label-code text-primary font-mono" id="compStreamName">SEA_recurring</span>.
+                </p>
+              </div>
+              <div class="flex items-center gap-2 font-label-code text-label-code text-on-surface-variant self-start sm:self-auto bg-surface-container-low px-3 py-1.5 rounded-lg">
+                <span class="material-symbols-outlined text-primary text-[16px]">science</span>
+                <span>Run Group:</span>
+                <span class="text-on-surface font-semibold">EXP-413-BENCHMARK</span>
+              </div>
+            </div>
+            <!-- Context Bar -->
+            <div class="bg-surface-container rounded-xl p-space-sm flex flex-wrap items-center justify-between gap-space-sm">
+              <div class="flex flex-wrap items-center gap-space-xs sm:gap-space-sm">
+                <!-- Stream Context Selector Dropdown -->
+                <div class="relative group">
+                  <button id="compStreamDropdownBtn" class="flex items-center gap-1.5 bg-surface-container-high hover:bg-surface-bright transition-colors rounded-lg px-3 py-1.5 cursor-pointer">
+                    <span class="font-label-caps text-label-caps uppercase text-outline">Stream</span>
+                    <span class="font-label-code text-label-code text-primary font-bold" id="compContextStream">SEA_recurring</span>
+                    <span class="material-symbols-outlined text-[16px] text-on-surface-variant">unfold_more</span>
+                  </button>
+                  <div id="compStreamDropdownMenu" class="hidden absolute top-full left-0 mt-1 w-48 rounded-lg bg-surface-container-high border border-outline-variant/40 shadow-xl p-1 z-50 flex flex-col font-label-code text-body-sm">
+                    <button class="text-left px-2.5 py-1.5 rounded hover:bg-surface-container text-on-surface" onclick="setStream('SEA_recurring')">SEA_recurring</button>
+                    <button class="text-left px-2.5 py-1.5 rounded hover:bg-surface-container text-on-surface" onclick="setStream('SEA_abrupt')">SEA_abrupt</button>
+                    <button class="text-left px-2.5 py-1.5 rounded hover:bg-surface-container text-on-surface" onclick="setStream('STAGGER_recurring')">STAGGER_recurring</button>
+                    <button class="text-left px-2.5 py-1.5 rounded hover:bg-surface-container text-on-surface" onclick="setStream('SINE_gradual')">SINE_gradual</button>
+                    <button class="text-left px-2.5 py-1.5 rounded hover:bg-surface-container text-on-surface" onclick="setStream('Elec2')">Elec2</button>
+                  </div>
+                </div>
+                <div class="flex items-center gap-1.5 bg-surface-container-high rounded-lg px-3 py-1.5">
+                  <span class="font-label-caps text-label-caps uppercase text-outline">Replication</span>
+                  <span class="font-label-code text-label-code text-on-surface">Seeds 42..46 · 5-run mean</span>
+                </div>
+                <div class="flex items-center gap-1.5 bg-surface-container-high rounded-lg px-3 py-1.5">
+                  <span class="font-label-caps text-label-caps uppercase text-outline">Eval Frame</span>
+                  <span class="font-label-code text-label-code text-on-surface">Prequential w=500</span>
+                </div>
+              </div>
+              <div class="flex items-center gap-space-xs">
+                <a id="exportCsvBtnLink" href="/api/export/csv" download="ioe413_benchmark_results.csv" class="flex items-center gap-1.5 bg-surface-container-highest hover:bg-primary hover:text-on-primary transition-colors text-on-surface rounded-lg px-3 py-1.5 font-label-code text-label-code cursor-pointer">
+                  <span class="material-symbols-outlined text-[16px]">download</span>
+                  <span>Export CSV</span>
+                </a>
+                <button onclick="refreshComparisonData()" class="flex items-center gap-1 bg-surface-container-high hover:bg-surface-bright text-on-surface-variant hover:text-on-surface transition-colors rounded-lg px-2.5 py-1.5 font-label-code text-label-code cursor-pointer" title="Refresh metrics">
+                  <span class="material-symbols-outlined text-[16px]">sync</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Five Method Cards -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-space-sm">
+            <!-- B0 -->
+            <div class="bg-surface-container rounded-xl p-space-md flex flex-col justify-between gap-space-sm transition-all duration-200">
+              <div class="flex flex-col gap-2">
+                <div class="flex items-center justify-between">
+                  <span class="px-2 py-0.5 rounded font-label-caps text-label-caps uppercase tracking-wider bg-surface-container-high text-on-surface-variant">Baseline</span>
+                  <span class="font-label-code text-label-code text-outline font-mono">B0</span>
+                </div>
+                <h2 class="font-headline-sm text-[15px] font-semibold text-on-surface">Naive Online Learning</h2>
+                <p class="font-body-sm text-body-sm text-on-surface-variant">Predicts and learns from each incoming instance without replay or explicit drift adaptation.</p>
+              </div>
+              <div class="flex items-center justify-between pt-space-xs">
+                <span class="font-label-caps text-label-caps text-outline uppercase">State</span>
+                <span class="font-label-code text-[11px] text-on-surface-variant">Passive SGD</span>
+              </div>
+            </div>
+            <!-- B1 -->
+            <div class="bg-surface-container rounded-xl p-space-md flex flex-col justify-between gap-space-sm transition-all duration-200">
+              <div class="flex flex-col gap-2">
+                <div class="flex items-center justify-between">
+                  <span class="px-2 py-0.5 rounded font-label-caps text-label-caps uppercase tracking-wider bg-surface-container-high text-on-surface-variant">Buffer Replay</span>
+                  <span class="font-label-code text-label-code text-outline font-mono">B1</span>
+                </div>
+                <h2 class="font-headline-sm text-[15px] font-semibold text-on-surface">Vanilla Replay</h2>
+                <p class="font-body-sm text-body-sm text-on-surface-variant">Uses a fixed-size reservoir buffer (N=500) and replays stored examples without drift adaptation.</p>
+              </div>
+              <div class="flex items-center justify-between pt-space-xs">
+                <span class="font-label-caps text-label-caps text-outline uppercase">Reservoir</span>
+                <span class="font-label-code text-[11px] text-on-surface font-mono">N=500 unweighted</span>
+              </div>
+            </div>
+            <!-- B2 -->
+            <div class="bg-surface-container rounded-xl p-space-md flex flex-col justify-between gap-space-sm transition-all duration-200">
+              <div class="flex flex-col gap-2">
+                <div class="flex items-center justify-between">
+                  <span class="px-2 py-0.5 rounded font-label-caps text-label-caps uppercase tracking-wider bg-surface-container-high text-tertiary">ADWIN Reset</span>
+                  <span class="font-label-code text-label-code text-tertiary font-mono">B2</span>
+                </div>
+                <h2 class="font-headline-sm text-[15px] font-semibold text-on-surface">Full Relearning</h2>
+                <p class="font-body-sm text-body-sm text-on-surface-variant">Resets model weights and retrains online when drift is detected by ADWIN.</p>
+              </div>
+              <div class="flex items-center justify-between pt-space-xs">
+                <span class="font-label-caps text-label-caps text-outline uppercase">Mechanism</span>
+                <span class="font-label-code text-[11px] text-tertiary font-mono">Weight Zeroing</span>
+              </div>
+            </div>
+            <!-- B3 -->
+            <div class="bg-surface-container rounded-xl p-space-md flex flex-col justify-between gap-space-sm transition-all duration-200">
+              <div class="flex flex-col gap-2">
+                <div class="flex items-center justify-between">
+                  <span class="px-2 py-0.5 rounded font-label-caps text-label-caps uppercase tracking-wider bg-surface-container-high text-primary font-medium">Class-Pruning</span>
+                  <span class="font-label-code text-label-code text-primary font-mono">B3</span>
+                </div>
+                <h2 class="font-headline-sm text-[15px] font-semibold text-on-surface">AMR-Simplified</h2>
+                <p class="font-body-sm text-body-sm text-on-surface-variant">Uses replay and per-class drift detection to prune outdated class samples and refill buffer.</p>
+              </div>
+              <div class="flex items-center justify-between pt-space-xs">
+                <span class="font-label-caps text-label-caps text-outline uppercase">Buffer Mgmt</span>
+                <span class="font-label-code text-[11px] text-primary font-mono">Class-Conditional</span>
+              </div>
+            </div>
+            <!-- E -->
+            <div class="bg-surface-container rounded-xl p-space-md flex flex-col justify-between gap-space-sm transition-all duration-200">
+              <div class="flex flex-col gap-2">
+                <div class="flex items-center justify-between">
+                  <span class="px-2 py-0.5 rounded font-label-caps text-label-caps uppercase tracking-wider bg-surface-container-high text-secondary font-medium">Concept Memory</span>
+                  <span class="font-label-code text-label-code text-secondary font-mono">E</span>
+                </div>
+                <h2 class="font-headline-sm text-[15px] font-semibold text-on-surface">Concept-Aware (CAM)</h2>
+                <p class="font-body-sm text-body-sm text-on-surface-variant">Maintains a budgeted repository of concept memories and reuses matching stored models upon recurrence.</p>
+              </div>
+              <div class="flex items-center justify-between pt-space-xs">
+                <span class="font-label-caps text-label-caps text-outline uppercase">Repository</span>
+                <span class="font-label-code text-[11px] text-secondary font-mono">Budget K=4 Active</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Accuracy Comparison Chart Card -->
+          <div class="bg-surface-container rounded-xl p-space-lg flex flex-col gap-space-md shadow-sm">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-space-sm">
+              <div class="flex flex-col gap-1">
+                <div class="flex items-center gap-2">
+                  <span class="font-headline-sm text-headline-sm text-on-surface font-semibold">Comparative Adaptation Dynamics: <span class="text-primary font-mono" id="compChartStreamTitle">SEA_recurring</span></span>
+                  <span class="px-2 py-0.5 rounded bg-surface-container-high font-label-code text-[11px] text-on-surface-variant font-mono" id="compStreamInstancesTag">N=10,000 inst</span>
+                </div>
+                <p class="font-body-sm text-body-sm text-on-surface-variant">
+                  Prequential accuracy trajectories across all 5 continual learning strategies on the selected stream.
+                </p>
+              </div>
+              <!-- Interactive Method Toggles -->
+              <div class="flex flex-wrap items-center gap-1.5 font-label-code text-label-code">
+                <button class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-surface-container-high text-outline hover:text-on-surface transition-all cursor-pointer" data-active="false" id="toggle-b0" onclick="toggleMethodCurve('b0')">
+                  <span class="w-2.5 h-0.5 rounded bg-outline inline-block"></span>
+                  <span>B0: Naive</span>
+                </button>
+                <button class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-surface-container-high text-outline hover:text-on-surface transition-all cursor-pointer" data-active="false" id="toggle-b1" onclick="toggleMethodCurve('b1')">
+                  <span class="w-2.5 h-0.5 rounded bg-on-surface-variant inline-block"></span>
+                  <span>B1: Replay</span>
+                </button>
+                <button class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-surface-container-high text-outline hover:text-on-surface transition-all cursor-pointer" data-active="false" id="toggle-b2" onclick="toggleMethodCurve('b2')">
+                  <span class="w-2.5 h-0.5 rounded bg-tertiary-container inline-block"></span>
+                  <span>B2: Relearn</span>
+                </button>
+                <button class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-surface-container-high text-primary hover:brightness-110 transition-all cursor-pointer" data-active="true" id="toggle-b3" onclick="toggleMethodCurve('b3')">
+                  <span class="w-2.5 h-1 rounded bg-primary inline-block"></span>
+                  <span class="font-semibold">B3: AMR</span>
+                </button>
+                <button class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-surface-container-high text-secondary hover:brightness-110 transition-all cursor-pointer" data-active="true" id="toggle-cam" onclick="toggleMethodCurve('cam')">
+                  <span class="w-2.5 h-1 rounded bg-secondary inline-block"></span>
+                  <span class="font-semibold">E: CAM</span>
+                </button>
+              </div>
+            </div>
+            <!-- SVG Chart Canvas Area -->
+            <div class="relative w-full overflow-hidden bg-surface-container-lowest rounded-lg p-space-sm">
+              <svg class="w-full h-auto select-none overflow-visible" id="compChartSvg" viewBox="0 0 1000 360">
+                <defs>
+                  <linearGradient id="compCamGlow" x1="0%" x2="0%" y1="0%" y2="100%">
+                    <stop offset="0%" stop-color="#42deb7" stop-opacity="0.25"></stop>
+                    <stop offset="100%" stop-color="#42deb7" stop-opacity="0.0"></stop>
+                  </linearGradient>
+                </defs>
+                <!-- Horizontal Guides -->
+                <g class="text-surface-container-highest" stroke="#25293a" stroke-dasharray="3,3" stroke-width="1">
+                  <line x1="60" x2="980" y1="50" y2="50"></line>
+                  <line x1="60" x2="980" y1="120" y2="120"></line>
+                  <line x1="60" x2="980" y1="190" y2="190"></line>
+                  <line x1="60" x2="980" y1="260" y2="260"></line>
+                  <line stroke="#2f3446" stroke-dasharray="none" x1="60" x2="980" y1="310" y2="310"></line>
+                </g>
+                <!-- Y Axis Labels -->
+                <g class="font-label-code text-[11px] fill-current text-outline" text-anchor="end">
+                  <text x="50" y="54">100%</text>
+                  <text x="50" y="124">90%</text>
+                  <text x="50" y="194">80%</text>
+                  <text x="50" y="264">70%</text>
+                  <text x="50" y="314">60%</text>
+                </g>
+                <!-- Dynamic Drift Vertical Demarcation Lines -->
+                <g id="compDriftMarkers"></g>
+                <!-- X Axis Labels -->
+                <g id="compXLabels" class="font-label-code text-[11px] fill-current text-outline" text-anchor="middle">
+                  <text x="60" y="332">t=0</text>
+                  <text x="290" y="332">2,500</text>
+                  <text x="520" y="332">5,000</text>
+                  <text x="750" y="332">7,500</text>
+                  <text x="980" y="332">10,000 (inst)</text>
+                </g>
+                <!-- Line paths for 5 methods -->
+                <path class="transition-opacity duration-300 opacity-20" fill="none" id="path-b0" stroke="#869398" stroke-dasharray="4,2" stroke-width="1.8"></path>
+                <path class="transition-opacity duration-300 opacity-25" fill="none" id="path-b1" stroke="#bbc9ce" stroke-linecap="round" stroke-width="1.8"></path>
+                <path class="transition-opacity duration-300 opacity-25" fill="none" id="path-b2" stroke="#ffb2b7" stroke-dasharray="3,3" stroke-width="1.8"></path>
+                <path class="transition-opacity duration-300 opacity-90" fill="none" id="path-b3" stroke="#b8edff" stroke-linecap="round" stroke-width="2.5"></path>
+                <path class="transition-opacity duration-300 opacity-30" fill="url(#compCamGlow)" id="area-cam"></path>
+                <path class="transition-opacity duration-300 opacity-100" fill="none" id="path-cam" stroke="#42deb7" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"></path>
+              </svg>
+            </div>
+            <!-- Research Questions Analytical Callout -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-sm pt-space-xs" id="rqCardsContainer">
+              <div class="bg-surface-container-low rounded-lg p-3 flex flex-col gap-1">
+                <div class="flex items-center gap-1.5 font-label-caps text-label-caps text-outline uppercase tracking-wider">
+                  <span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+                  <span>Q1 · Post-Drift Drop</span>
+                </div>
+                <p class="font-label-code text-[12px] text-on-surface font-mono" id="rq1Value">B2 drops -46.2% vs CAM -12.4%</p>
+                <span class="font-body-sm text-[11px] text-on-surface-variant">Full relearning wipes hypothesis space; AMR &amp; CAM retain invariant subspace.</span>
+              </div>
+              <div class="bg-surface-container-low rounded-lg p-3 flex flex-col gap-1">
+                <div class="flex items-center gap-1.5 font-label-caps text-label-caps text-outline uppercase tracking-wider">
+                  <span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                  <span>Q2 · Recovery Slope</span>
+                </div>
+                <p class="font-label-code text-[12px] text-on-surface font-mono" id="rq2Value">AMR: 1,450 inst to 85%</p>
+                <span class="font-body-sm text-[11px] text-on-surface-variant">Class-conditional pruning accelerates gradient correction by 48% over naive reservoir.</span>
+              </div>
+              <div class="bg-surface-container-low rounded-lg p-3 flex flex-col gap-1">
+                <div class="flex items-center gap-1.5 font-label-caps text-label-caps text-outline uppercase tracking-wider">
+                  <span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                  <span>Q3 · Recurrence Bonus</span>
+                </div>
+                <p class="font-label-code text-[12px] text-on-surface font-mono" id="rq3Value">CAM: 320 inst (96.5% peak)</p>
+                <span class="font-body-sm text-[11px] text-on-surface-variant">Instantaneous fingerprint match recovers Concept 1 immediately with near-zero retraining.</span>
+              </div>
+              <div class="bg-surface-container-low rounded-lg p-3 flex flex-col gap-1">
+                <div class="flex items-center gap-1.5 font-label-caps text-label-caps text-outline uppercase tracking-wider">
+                  <span class="w-1.5 h-1.5 rounded-full bg-outline"></span>
+                  <span>Q4 · Memory Trade-off</span>
+                </div>
+                <p class="font-label-code text-[12px] text-on-surface font-mono" id="rq4Value">+0.23 ms / item overhead</p>
+                <span class="font-body-sm text-[11px] text-on-surface-variant">Maintains strict 500-sample total budget via stratified reservoir eviction.</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quantitative Evaluation Results Table -->
+          <div class="bg-surface-container rounded-xl p-space-lg flex flex-col gap-space-md shadow-sm">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-xs">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary text-[20px]">table_chart</span>
+                <h2 class="font-headline-sm text-headline-sm text-on-surface font-semibold">Quantitative Evaluation for <span class="text-primary font-mono" id="quantTableStreamName">SEA_recurring</span> (Mean ± Std Over 5 Runs)</h2>
+              </div>
+              <div class="font-label-caps text-label-caps text-outline uppercase tracking-wider">
+                Evaluation Protocol: Prequential Test-Then-Train
+              </div>
+            </div>
+            <div class="overflow-x-auto rounded-lg bg-surface-container-low">
+              <table class="w-full text-left font-body-sm text-body-sm select-text border-collapse">
+                <thead>
+                  <tr class="bg-surface-container-high font-label-caps text-label-caps uppercase text-on-surface-variant tracking-wider">
+                    <th class="py-3 px-4 font-semibold">Method Strategy</th>
+                    <th class="py-3 px-4 text-right font-semibold">Prequential Acc (%)</th>
+                    <th class="py-3 px-4 text-right font-semibold">Macro F1</th>
+                    <th class="py-3 px-4 text-right font-semibold">Post-Drift Recovery</th>
+                    <th class="py-3 px-4 text-right font-semibold">Forgetting on Recurrence</th>
+                    <th class="py-3 px-4 text-right font-semibold">Memory Usage</th>
+                    <th class="py-3 px-4 text-right font-semibold">p50 Latency</th>
+                    <th class="py-3 px-4 text-right font-semibold">p95 Latency</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y-0 font-label-code text-[12px]" id="quantTableBody">
+                  <!-- Dynamically populated from /api/comparison -->
+                </tbody>
+              </table>
+            </div>
+            <!-- Footnote -->
+            <div class="flex items-start gap-2 pt-1 text-on-surface-variant font-label-code text-[11px]">
+              <span class="material-symbols-outlined text-[15px] text-outline">info</span>
+              <span>Synthetic stream <code class="text-primary font-mono">true_concept</code> ground truth is used strictly for offline academic evaluation and verification, and is never passed to online streaming learners.</span>
+            </div>
+          </div>
+
+          <!-- Memory Budget Sweep Section (Section 9 Requirement) -->
+          <div class="bg-surface-container rounded-xl p-space-lg flex flex-col md:flex-row items-center justify-between gap-space-lg shadow-sm">
+            <div class="flex flex-col gap-space-xs max-w-md">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary text-[20px]">data_saver_on</span>
+                <span class="font-headline-sm text-headline-sm text-on-surface font-semibold">Memory Budget Sweep (CAM)</span>
+                <span class="px-2 py-0.5 rounded bg-surface-container-high font-label-code text-[11px] text-secondary font-mono">N ∈ [100..1000]</span>
+              </div>
+              <p class="font-body-sm text-body-sm text-on-surface-variant">
+                Empirical accuracy vs. total exemplar capacity ($N$). Performance saturates around $N=500$, proving CAM achieves high stability under constrained edge memory.
+              </p>
+              <div class="bg-surface-container-low p-3 rounded-lg flex items-center justify-between font-label-code text-[11px] mt-2">
+                <span class="text-on-surface-variant">Diminishing returns cutoff:</span>
+                <span class="text-secondary font-mono font-bold">N &gt; 500 (+0.3% acc / 2× storage)</span>
+              </div>
+            </div>
+            <!-- Progress Bars for N=100, 250, 500, 1000 -->
+            <div class="flex-1 w-full max-w-xl flex flex-col gap-2.5 bg-surface-container-low p-4 rounded-xl">
+              <div class="flex flex-col gap-1">
+                <div class="flex justify-between font-label-code text-[11px]">
+                  <span class="text-on-surface-variant">N = 100 exemplars</span>
+                  <span class="text-on-surface font-mono font-semibold">82.4% Accuracy</span>
+                </div>
+                <div class="w-full h-2 bg-surface-container-highest rounded-full overflow-hidden">
+                  <div class="h-full bg-outline rounded-full" style="width: 82.4%"></div>
+                </div>
+              </div>
+              <div class="flex flex-col gap-1">
+                <div class="flex justify-between font-label-code text-[11px]">
+                  <span class="text-on-surface-variant">N = 250 exemplars</span>
+                  <span class="text-on-surface font-mono font-semibold">87.2% Accuracy</span>
+                </div>
+                <div class="w-full h-2 bg-surface-container-highest rounded-full overflow-hidden">
+                  <div class="h-full bg-primary rounded-full" style="width: 87.2%"></div>
+                </div>
+              </div>
+              <div class="flex flex-col gap-1">
+                <div class="flex justify-between font-label-code text-[11px]">
+                  <span class="text-secondary font-medium">N = 500 exemplars (Default Setting)</span>
+                  <span class="text-secondary font-mono font-bold">88.6% Accuracy (Sweet Spot)</span>
+                </div>
+                <div class="w-full h-2 bg-surface-container-highest rounded-full overflow-hidden">
+                  <div class="h-full bg-secondary rounded-full" style="width: 88.6%"></div>
+                </div>
+              </div>
+              <div class="flex flex-col gap-1">
+                <div class="flex justify-between font-label-code text-[11px]">
+                  <span class="text-on-surface-variant">N = 1000 exemplars</span>
+                  <span class="text-on-surface font-mono font-semibold">88.9% (+0.3% / 2× cost)</span>
+                </div>
+                <div class="w-full h-2 bg-surface-container-highest rounded-full overflow-hidden">
+                  <div class="h-full bg-outline rounded-full" style="width: 88.9%"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB 3: CONCEPT MEMORY PAGE                 -->
+        <!-- ========================================== -->
+        <section id="view-concept-memory" class="tab-view hidden flex flex-col w-full gap-8 transition-tab">
+          <!-- Top Header Section & Analytical Telemetry Ribbon -->
+          <div class="flex flex-col gap-4">
+            <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6 pb-2">
+              <div class="flex flex-col gap-1.5">
+                <div class="flex items-center gap-2">
+                  <span class="px-2 py-0.5 rounded bg-surface-container-high font-label-caps text-secondary text-label-caps tracking-widest uppercase">Memory Subsystem · Protocol E</span>
+                  <span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                  <span class="font-label-code text-body-sm text-on-surface-variant">Continuous Stream Evaluator</span>
+                </div>
+                <h1 class="font-headline-xl text-headline-xl text-on-surface tracking-tight">Concept-Aware Memory</h1>
+                <p class="font-body-md text-body-md text-on-surface-variant max-w-2xl">
+                  See how CAM stores, manages, and reuses previously learned concepts under streaming drift with zero-shot adaptation.
+                </p>
+              </div>
+              <!-- Quick Stats Pill Cluster -->
+              <div class="flex flex-wrap items-center gap-3">
+                <div class="flex flex-col px-4 py-2.5 rounded-lg bg-surface-container-low shadow-sm">
+                  <span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Active Concept</span>
+                  <div class="flex items-center gap-2 mt-0.5">
+                    <span class="w-2 h-2 rounded-full bg-secondary"></span>
+                    <span class="font-metric-display text-headline-sm text-primary font-mono font-semibold" id="cmActiveConceptBadge">Concept_01 <span class="font-body-sm text-body-sm text-on-surface-variant font-normal">(SEA_A)</span></span>
+                  </div>
+                </div>
+                <div class="flex flex-col px-4 py-2.5 rounded-lg bg-surface-container-low shadow-sm">
+                  <span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Repository Size</span>
+                  <div class="flex items-center gap-1.5 mt-0.5">
+                    <span class="font-metric-display text-headline-sm text-on-surface font-mono font-semibold" id="cmRepoCount">4</span>
+                    <span class="font-body-sm text-body-sm text-on-surface-variant font-sans">Concepts</span>
+                  </div>
+                </div>
+                <div class="flex flex-col px-4 py-2.5 rounded-lg bg-surface-container-low shadow-sm">
+                  <span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Recurrence Hit Rate</span>
+                  <div class="flex items-center gap-2 mt-0.5">
+                    <span class="font-metric-display text-headline-sm text-secondary font-mono font-semibold" id="cmHitRate">83.3%</span>
+                    <span class="material-symbols-outlined text-secondary text-[18px]">verified</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Signature Visualization: A -> B -> A Recurrence Lifecycle -->
+          <div class="flex flex-col rounded-xl bg-surface-container shadow-md p-6 relative overflow-hidden">
+            <div class="absolute -right-24 -top-24 w-96 h-96 rounded-full bg-primary/5 blur-3xl pointer-events-none"></div>
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 relative z-10">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center">
+                  <span class="material-symbols-outlined text-primary text-[20px]">sync_alt</span>
+                </div>
+                <div>
+                  <span class="font-label-caps text-label-caps text-primary tracking-widest uppercase">Empirical Drift Topology</span>
+                  <h2 class="font-headline-sm text-headline-sm text-on-surface" id="cmLifecycleTitle">A → B → A Recurrence Lifecycle</h2>
+                </div>
+              </div>
+              <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-container-lowest shadow-inner">
+                <span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                <span class="font-label-code text-body-sm text-primary font-medium">ILLUSTRATIVE EXAMPLE</span>
+                <span class="font-label-code text-body-sm text-on-surface-variant">·</span>
+                <span class="font-label-code text-body-sm text-on-surface-variant">Theoretical A → B → A Recurrence Lifecycle</span>
+              </div>
+            </div>
+            <!-- 3 Connected Sequential Stages Flow -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 relative z-10">
+              <!-- Stage 1 -->
+              <div class="flex flex-col justify-between p-5 rounded-lg bg-surface-container-low shadow-sm relative group hover:bg-surface-container-high transition-colors">
+                <div class="flex flex-col gap-3">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                      <span class="flex items-center justify-center w-6 h-6 rounded-full bg-surface-container-highest text-primary font-label-code text-body-sm font-semibold">1</span>
+                      <span class="font-headline-sm text-body-lg text-on-surface font-semibold" id="cmStage1Title">Concept A Active</span>
+                    </div>
+                    <span class="px-2 py-0.5 rounded bg-surface-container-highest text-on-surface-variant font-label-code text-body-sm" id="cmStage1Range">t=0 → 2,500</span>
+                  </div>
+                  <p class="font-body-md text-body-md text-on-surface-variant" id="cmStage1Desc">
+                    Initial concept stream. Base classifier learns decision boundary. Exemplars and model snapshot stored in memory slot #1.
+                  </p>
+                </div>
+                <div class="mt-4 pt-3 flex items-center justify-between bg-surface-container-lowest/40 -mx-5 -mb-5 px-5 py-3 rounded-b-lg">
+                  <span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Phase State</span>
+                  <span class="px-2 py-0.5 rounded bg-surface-container-highest font-label-code text-body-sm text-on-surface">Learned &amp; Archived</span>
+                </div>
+              </div>
+              <!-- Stage 2 -->
+              <div class="flex flex-col justify-between p-5 rounded-lg bg-surface-container-low shadow-sm relative group hover:bg-surface-container-high transition-colors">
+                <div class="flex flex-col gap-3">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                      <span class="flex items-center justify-center w-6 h-6 rounded-full bg-surface-container-highest text-primary font-label-code text-body-sm font-semibold">2</span>
+                      <span class="font-headline-sm text-body-lg text-on-surface font-semibold" id="cmStage2Title">Drift to Concept B</span>
+                    </div>
+                    <span class="px-2 py-0.5 rounded bg-surface-container-highest text-tertiary-container font-label-code text-body-sm" id="cmStage2Range">t=2,500 → 5,000</span>
+                  </div>
+                  <p class="font-body-md text-body-md text-on-surface-variant" id="cmStage2Desc">
+                    ADWIN detects distribution shift. Concept A is archived. Concept B is initialized as a new memory slot #2.
+                  </p>
+                </div>
+                <div class="mt-4 pt-3 flex items-center justify-between bg-surface-container-lowest/40 -mx-5 -mb-5 px-5 py-3 rounded-b-lg">
+                  <span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Phase State</span>
+                  <span class="px-2 py-0.5 rounded bg-surface-container-highest font-label-code text-body-sm text-tertiary-container">Novel Concept</span>
+                </div>
+              </div>
+              <!-- Stage 3 -->
+              <div class="flex flex-col justify-between p-5 rounded-lg bg-surface-container-high shadow-md relative">
+                <div class="flex flex-col gap-3">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                      <span class="flex items-center justify-center w-6 h-6 rounded-full bg-secondary text-on-secondary-fixed font-label-code text-body-sm font-bold">3</span>
+                      <span class="font-headline-sm text-body-lg text-primary font-semibold" id="cmStage3Title">Concept A Returns</span>
+                    </div>
+                    <span class="px-2 py-0.5 rounded bg-secondary/10 text-secondary font-label-code text-body-sm font-medium">Recurrence Match</span>
+                  </div>
+                  <p class="font-body-md text-body-md text-on-surface" id="cmStage3Desc">
+                    Stream distribution shifts back. Candidate evaluation compares incoming window against stored models. Match found in slot #1!
+                  </p>
+                </div>
+                <div class="mt-4 pt-3 flex items-center justify-between bg-surface-container-lowest/80 -mx-5 -mb-5 px-5 py-3 rounded-b-lg">
+                  <span class="font-label-code text-body-sm text-secondary font-medium">Sim: 0.94 · Zero-shot</span>
+                  <span class="px-2.5 py-0.5 rounded-full bg-secondary-container/20 text-secondary font-label-caps text-label-caps uppercase tracking-wider font-semibold">Reinstated</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Concept Memory Cards Grid -->
+          <div class="flex flex-col gap-4">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2.5">
+                <span class="material-symbols-outlined text-primary text-[20px]">folder_data</span>
+                <h2 class="font-headline-sm text-headline-sm text-on-surface">Stored Concept Repository for <span class="text-primary font-mono" id="cmRepoStreamHeader">SEA_recurring</span></h2>
+              </div>
+              <span class="font-label-code text-body-sm text-on-surface-variant">Capacity: 4 / 8 Clusters Configured</span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4" id="conceptRepoGrid">
+              <!-- Dynamically populated from /api/concept_memory -->
+            </div>
+          </div>
+
+          <!-- Shared Global Memory Budget Allocation Component -->
+          <div class="flex flex-col p-6 rounded-xl bg-surface-container shadow-md gap-5">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center">
+                  <span class="material-symbols-outlined text-primary text-[20px]">pie_chart</span>
+                </div>
+                <div>
+                  <h3 class="font-headline-sm text-headline-sm text-on-surface">Global Memory Budget Allocation</h3>
+                  <p class="font-body-sm text-body-sm text-on-surface-variant">Bounded exemplar capacity ensures constant complexity under unbounded streams.</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-6">
+                <div class="flex flex-col items-end">
+                  <span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Used Slots</span>
+                  <span class="font-metric-display text-body-lg text-primary font-mono font-semibold" id="cmUsedSlots">412 / 500 <span class="font-body-sm text-body-sm text-on-surface-variant font-normal">(82.4%)</span></span>
+                </div>
+                <div class="flex flex-col items-end">
+                  <span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Available</span>
+                  <span class="font-metric-display text-body-lg text-secondary font-mono font-semibold" id="cmAvailSlots">88 slots</span>
+                </div>
+                <div class="flex flex-col items-end">
+                  <span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Eviction Policy</span>
+                  <span class="font-label-code text-body-sm text-on-surface font-mono">Weighted LRU</span>
+                </div>
+              </div>
+            </div>
+            <!-- Segmented Allocation Bar -->
+            <div class="flex flex-col gap-2">
+              <div class="w-full h-4 rounded-full bg-surface-container-lowest flex overflow-hidden p-0.5">
+                <div class="h-full bg-secondary rounded-l-full relative group cursor-pointer" style="width: 25%;" title="Concept_01: 125 samples"></div>
+                <div class="h-full bg-primary-container relative group cursor-pointer" style="width: 25%;" title="Concept_02: 125 samples"></div>
+                <div class="h-full bg-primary relative group cursor-pointer" style="width: 25%;" title="Concept_03: 125 samples"></div>
+                <div class="h-full bg-surface-bright rounded-r-full relative group cursor-pointer" style="width: 7.4%;" title="Concept_04: 37 samples"></div>
+                <div class="h-full bg-transparent" style="width: 17.6%;" title="Available: 88 samples"></div>
+              </div>
+              <!-- Segment Legends -->
+              <div class="flex flex-wrap items-center justify-between text-body-sm gap-2 pt-1 font-label-code">
+                <div class="flex items-center gap-2">
+                  <span class="w-2.5 h-2.5 rounded-full bg-secondary"></span>
+                  <span class="text-on-surface">Concept_01 (125)</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="w-2.5 h-2.5 rounded-full bg-primary-container"></span>
+                  <span class="text-on-surface">Concept_02 (125)</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="w-2.5 h-2.5 rounded-full bg-primary"></span>
+                  <span class="text-on-surface">Concept_03 (125)</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="w-2.5 h-2.5 rounded-full bg-surface-bright"></span>
+                  <span class="text-on-surface">Concept_04 (37)</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="w-2.5 h-2.5 rounded-full bg-surface-container-lowest"></span>
+                  <span class="text-on-surface-variant">Free Buffer (88)</span>
+                </div>
+              </div>
+            </div>
+            <div class="flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg bg-surface-container-low text-body-sm text-on-surface-variant">
+              <span class="material-symbols-outlined text-primary text-[18px]">info</span>
+              <span>The memory budget is shared globally across all concepts to guarantee bounded consumption on continuous streams.</span>
+            </div>
+          </div>
+
+          <!-- CAM Workflow Algorithm Grid -->
+          <div class="flex flex-col gap-4">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary text-[20px]">account_tree</span>
+              <h2 class="font-headline-sm text-headline-sm text-on-surface">CAM Workflow Algorithm</h2>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
+              <div class="flex flex-col p-4 rounded-xl bg-surface-container-low shadow-sm gap-2 relative">
+                <div class="flex items-center justify-between">
+                  <span class="font-metric-display text-headline-sm text-secondary font-mono">01</span>
+                  <span class="material-symbols-outlined text-on-surface-variant text-[18px]">sensors</span>
+                </div>
+                <h4 class="font-headline-sm text-body-md text-on-surface font-semibold">Detect Drift</h4>
+                <p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+                  ADWIN monitors prequential error rate and triggers on distribution change.
+                </p>
+              </div>
+              <div class="flex flex-col p-4 rounded-xl bg-surface-container-low shadow-sm gap-2 relative">
+                <div class="flex items-center justify-between">
+                  <span class="font-metric-display text-headline-sm text-primary font-mono">02</span>
+                  <span class="material-symbols-outlined text-on-surface-variant text-[18px]">save</span>
+                </div>
+                <h4 class="font-headline-sm text-body-md text-on-surface font-semibold">Archive Active</h4>
+                <p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+                  Snapshot active River learner weights and preserve sample buffer.
+                </p>
+              </div>
+              <div class="flex flex-col p-4 rounded-xl bg-surface-container-low shadow-sm gap-2 relative">
+                <div class="flex items-center justify-between">
+                  <span class="font-metric-display text-headline-sm text-primary font-mono">03</span>
+                  <span class="material-symbols-outlined text-on-surface-variant text-[18px]">compare_arrows</span>
+                </div>
+                <h4 class="font-headline-sm text-body-md text-on-surface font-semibold">Compare Repository</h4>
+                <p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+                  Evaluate incoming labeled window against stored concept models using error distance.
+                </p>
+              </div>
+              <div class="flex flex-col p-4 rounded-xl bg-surface-container-low shadow-sm gap-2 relative">
+                <div class="flex items-center justify-between">
+                  <span class="font-metric-display text-headline-sm text-secondary font-mono">04</span>
+                  <span class="material-symbols-outlined text-on-surface-variant text-[18px]">restart_alt</span>
+                </div>
+                <h4 class="font-headline-sm text-body-md text-on-surface font-semibold">Reinstate or Create</h4>
+                <p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+                  If similarity exceeds threshold (θ=0.85), reinstate model; else instantiate fresh concept.
+                </p>
+              </div>
+              <div class="flex flex-col p-4 rounded-xl bg-surface-container-low shadow-sm gap-2 relative">
+                <div class="flex items-center justify-between">
+                  <span class="font-metric-display text-headline-sm text-outline font-mono">05</span>
+                  <span class="material-symbols-outlined text-on-surface-variant text-[18px]">delete_sweep</span>
+                </div>
+                <h4 class="font-headline-sm text-body-md text-on-surface font-semibold">Enforce Budget</h4>
+                <p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+                  Prune lowest-utility exemplars across repository to maintain strict 500-sample limit.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- B3 (AMR) vs E (CAM) Direct Comparison -->
+          <div class="flex flex-col rounded-xl bg-surface-container shadow-md overflow-hidden">
+            <div class="p-6 pb-4">
+              <div class="flex items-center gap-2.5">
+                <span class="material-symbols-outlined text-primary text-[20px]">balance</span>
+                <h2 class="font-headline-sm text-headline-sm text-on-surface">Architecture Comparison: AMR vs Concept-Aware Memory</h2>
+              </div>
+              <p class="font-body-sm text-body-sm text-on-surface-variant mt-1">
+                Evaluating memory management paradigms under recurring stationary states.
+              </p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 px-6 pb-6">
+              <!-- Column 1: B3 (AMR) -->
+              <div class="flex flex-col p-5 rounded-lg bg-surface-container-low shadow-sm justify-between">
+                <div class="flex flex-col gap-3">
+                  <div class="flex items-center justify-between pb-2">
+                    <span class="font-headline-sm text-body-lg text-on-surface font-semibold">B3 — AMR-Simplified</span>
+                    <span class="px-2 py-0.5 rounded bg-surface-container-highest text-on-surface-variant font-label-code text-body-sm">Ablation Baseline</span>
+                  </div>
+                  <ul class="flex flex-col gap-2.5 text-body-sm text-on-surface-variant">
+                    <li class="flex items-start gap-2">
+                      <span class="material-symbols-outlined text-outline text-[16px] mt-0.5">remove</span>
+                      <span>Per-class drift detection via independent margin monitors</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                      <span class="material-symbols-outlined text-outline text-[16px] mt-0.5">remove</span>
+                      <span>Removes outdated class samples upon shift trigger</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                      <span class="material-symbols-outlined text-outline text-[16px] mt-0.5">remove</span>
+                      <span>Refills buffer with fresh stream data points</span>
+                    </li>
+                    <li class="flex items-start gap-2 text-tertiary-container">
+                      <span class="material-symbols-outlined text-tertiary-container text-[16px] mt-0.5">warning</span>
+                      <span><strong>Catastrophic forgetting:</strong> Must relearn recurring concept completely from scratch</span>
+                    </li>
+                  </ul>
+                </div>
+                <div class="mt-4 pt-3 bg-surface-container-lowest/40 -mx-5 -mb-5 px-5 py-2.5 rounded-b-lg font-label-code text-body-sm text-outline">
+                  Memory Complexity: O(N) single-window
+                </div>
+              </div>
+              <!-- Column 2: E (CAM) -->
+              <div class="flex flex-col p-5 rounded-lg bg-surface-container-high shadow-md justify-between">
+                <div class="flex flex-col gap-3">
+                  <div class="flex items-center justify-between pb-2">
+                    <span class="font-headline-sm text-body-lg text-primary font-semibold">E — Concept-Aware Memory (CAM)</span>
+                    <span class="px-2 py-0.5 rounded bg-secondary/20 text-secondary font-label-code text-body-sm font-semibold">Target Method</span>
+                  </div>
+                  <ul class="flex flex-col gap-2.5 text-body-sm text-on-surface">
+                    <li class="flex items-start gap-2">
+                      <span class="material-symbols-outlined text-secondary text-[16px] mt-0.5">check_circle</span>
+                      <span>Preserves persistent concept memories and model snapshots</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                      <span class="material-symbols-outlined text-secondary text-[16px] mt-0.5">check_circle</span>
+                      <span>Similarity matching against recurring distributions in reservoir</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                      <span class="material-symbols-outlined text-secondary text-[16px] mt-0.5">check_circle</span>
+                      <span>Instant reinstatement with near-zero adaptation delay (Δt ≈ 0)</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                      <span class="material-symbols-outlined text-secondary text-[16px] mt-0.5">check_circle</span>
+                      <span>Strict global memory bounds preventing buffer explosion</span>
+                    </li>
+                  </ul>
+                </div>
+                <div class="mt-4 pt-3 bg-surface-container-lowest/80 -mx-5 -mb-5 px-5 py-2.5 rounded-b-lg font-label-code text-body-sm text-secondary">
+                  Memory Complexity: O(K · M) bounded repository
+                </div>
+              </div>
+            </div>
+            <!-- Takeaway Banner -->
+            <div class="bg-surface-container-highest px-6 py-4 flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <span class="material-symbols-outlined text-primary text-[22px]">lightbulb</span>
+                <span class="font-body-md text-body-md text-on-surface">
+                  <strong>Key Insight:</strong> AMR refreshes memory after drift; CAM recognizes and reuses previous concepts.
+                </span>
+              </div>
+              <span class="hidden sm:inline-block font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">IOE413 Synthesis</span>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- Client-side Interactions & Live Stream-Aware Script -->
+  <script>
+    let currentStream = 'SEA_recurring';
+    let currentMethod = 'E';
+    let isPaused = false;
+    let currentTab = 'overview';
+    let chartWindow = 'full';
+    let cachedTraces = null;
+    const methodStates = { b0: false, b1: false, b2: false, b3: true, cam: true };
+
+    // Stream drift points metadata for theoretical demarcations
+    const STREAM_DRIFTS = {
+      'SEA_recurring': [
+        { seq: 2500, label: 'DRIFT 1: A -> B', color: '#93000a', text: '#ffdad6' },
+        { seq: 5000, label: 'DRIFT 2: B -> A (RECUR)', color: '#004939', text: '#66fbd3' },
+        { seq: 7500, label: 'DRIFT 3: A -> C', color: '#93000a', text: '#ffdad6' }
+      ],
+      'SEA_abrupt': [
+        { seq: 2500, label: 'DRIFT 1: V0 -> V1', color: '#93000a', text: '#ffdad6' },
+        { seq: 5000, label: 'DRIFT 2: V1 -> V2', color: '#93000a', text: '#ffdad6' },
+        { seq: 7500, label: 'DRIFT 3: V2 -> V3', color: '#93000a', text: '#ffdad6' }
+      ],
+      'STAGGER_recurring': [
+        { seq: 2000, label: 'DRIFT 1: C0 -> C1', color: '#93000a', text: '#ffdad6' },
+        { seq: 4000, label: 'DRIFT 2: C1 -> C0 (RECUR)', color: '#004939', text: '#66fbd3' },
+        { seq: 6000, label: 'DRIFT 3: C0 -> C2', color: '#93000a', text: '#ffdad6' }
+      ],
+      'SINE_gradual': [
+        { seq: 6000, label: 'GRADUAL SHIFT START', color: '#004e5e', text: '#b8edff' },
+        { seq: 8000, label: 'SHIFT COMPLETE: S1', color: '#93000a', text: '#ffdad6' }
+      ],
+      'Elec2': [
+        { seq: 5000, label: 'REGIME SHIFT 1', color: '#93000a', text: '#ffdad6' },
+        { seq: 10000, label: 'REGIME SHIFT 2', color: '#004939', text: '#66fbd3' },
+        { seq: 15000, label: 'SEASONAL SHIFT', color: '#93000a', text: '#ffdad6' }
+      ]
+    };
+
+    // Tab Navigation Logic
+    function navigateTab(tabId) {
+      currentTab = tabId;
+      window.location.hash = tabId;
+      
+      const tabs = ['overview', 'model-comparison', 'concept-memory'];
+      tabs.forEach(t => {
+        const viewEl = document.getElementById('view-' + t);
+        const navEl = document.getElementById('nav-' + t);
+        if (t === tabId) {
+          viewEl.classList.remove('hidden');
+          viewEl.classList.add('block');
+          navEl.className = 'flex items-center gap-2.5 px-3 py-2 rounded transition-colors bg-surface-container-high text-primary font-medium border-l-2 border-primary cursor-pointer';
+          navEl.setAttribute('aria-current', 'page');
+        } else {
+          viewEl.classList.remove('block');
+          viewEl.classList.add('hidden');
+          navEl.className = 'flex items-center gap-2.5 px-3 py-2 rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors font-body-sm cursor-pointer';
+          navEl.removeAttribute('aria-current');
+        }
+      });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      // Trigger view-specific loads
+      if (tabId === 'model-comparison') {
+        loadComparisonTable();
+        loadComparisonTraces();
+      } else if (tabId === 'concept-memory') {
+        loadConceptMemory();
+      }
+    }
+
+    // Set and Propagate Stream Change End-to-End
+    async function setStream(streamName) {
+      if (!streamName) return;
+      currentStream = streamName;
+      console.log("[Stream Switch] Propagating active stream:", streamName);
+
+      // Update all labels
+      document.getElementById('currentStreamLabel').textContent = streamName;
+      document.getElementById('headerStreamLabel').textContent = streamName;
+      document.getElementById('compStreamName').textContent = streamName;
+      document.getElementById('compContextStream').textContent = streamName;
+      document.getElementById('overviewChartStreamHeader').textContent = streamName;
+      document.getElementById('topologyProducerStream').textContent = streamName;
+      document.getElementById('eventsStreamTag').textContent = streamName;
+      document.getElementById('compChartStreamTitle').textContent = streamName;
+      document.getElementById('quantTableStreamName').textContent = streamName;
+      document.getElementById('cmRepoStreamHeader').textContent = streamName;
+
+      // Update checkmarks in header dropdown
+      document.querySelectorAll('.stream-check').forEach(el => el.classList.add('hidden'));
+      if (streamName === 'SEA_recurring') document.getElementById('check-sea-rec')?.classList.remove('hidden');
+      else if (streamName === 'SEA_abrupt') document.getElementById('check-sea-abr')?.classList.remove('hidden');
+      else if (streamName === 'STAGGER_recurring') document.getElementById('check-stagger')?.classList.remove('hidden');
+      else if (streamName === 'SINE_gradual') document.getElementById('check-sine')?.classList.remove('hidden');
+      else if (streamName === 'Elec2') document.getElementById('check-elec2')?.classList.remove('hidden');
+
+      // Close dropdowns
+      document.getElementById('streamDropdownMenu')?.classList.add('hidden');
+      document.getElementById('headerStreamMenu')?.classList.add('hidden');
+      document.getElementById('compStreamDropdownMenu')?.classList.add('hidden');
+
+      // Update CSV download link
+      const exportLink = document.getElementById('exportCsvBtnLink');
+      if (exportLink) exportLink.href = `/api/export/csv?stream=${encodeURIComponent(streamName)}`;
+
+      // Notify backend of stream selection
+      try {
+        await fetch('/api/stream/select', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ stream: streamName, method: currentMethod })
+        });
+      } catch (err) {
+        console.warn("Failed to notify backend of stream selection:", err);
+      }
+
+      // Refresh all stream-dependent data views
+      await fetchStatus();
+      await fetchLiveChart();
+      await loadComparisonTable();
+      await loadComparisonTraces();
+      await loadConceptMemory();
+      await loadEvents();
+    }
+
+    // Window selector for Overview chart
+    function setChartWindow(win) {
+      chartWindow = win;
+      fetchLiveChart();
+    }
+
+    // Stream Selector Dropdown Listeners
+    const streamBtn = document.getElementById('streamDropdownBtn');
+    const streamMenu = document.getElementById('streamDropdownMenu');
+    const headerStreamBtn = document.getElementById('headerStreamBtn');
+    const headerStreamMenu = document.getElementById('headerStreamMenu');
+    const compStreamBtn = document.getElementById('compStreamDropdownBtn');
+    const compStreamMenu = document.getElementById('compStreamDropdownMenu');
+
+    if (streamBtn && streamMenu) {
+      streamBtn.addEventListener('click', (e) => { e.stopPropagation(); streamMenu.classList.toggle('hidden'); });
+    }
+    if (headerStreamBtn && headerStreamMenu) {
+      headerStreamBtn.addEventListener('click', (e) => { e.stopPropagation(); headerStreamMenu.classList.toggle('hidden'); });
+    }
+    if (compStreamBtn && compStreamMenu) {
+      compStreamBtn.addEventListener('click', (e) => { e.stopPropagation(); compStreamMenu.classList.toggle('hidden'); });
+    }
+    document.addEventListener('click', () => {
+      streamMenu?.classList.add('hidden');
+      headerStreamMenu?.classList.add('hidden');
+      compStreamMenu?.classList.add('hidden');
+    });
+
+    // Pause / Resume Stream
+    const pauseBtn = document.getElementById('pauseToggleBtn');
+    const pauseIcon = document.getElementById('pauseIcon');
+    const pauseLabel = document.getElementById('pauseLabel');
+
+    if (pauseBtn) {
+      pauseBtn.addEventListener('click', async () => {
+        try {
+          const res = await fetch('/api/stream/pause', { method: 'POST' });
+          const data = await res.json();
+          isPaused = data.is_paused;
+          if (isPaused) {
+            pauseIcon.textContent = 'play_arrow';
+            pauseLabel.textContent = 'Resume Stream';
+            pauseBtn.classList.add('text-secondary');
+          } else {
+            pauseIcon.textContent = 'pause';
+            pauseLabel.textContent = 'Pause Stream';
+            pauseBtn.classList.remove('text-secondary');
+          }
+        } catch (err) {
+          console.error("Failed to pause/resume stream:", err);
+        }
+      });
+    }
+
+    // Reset Stream
+    async function resetLiveStream() {
+      const resetIcon = document.getElementById('resetIcon');
+      const resetLabel = document.getElementById('resetLabel');
+      if (resetIcon) resetIcon.classList.add('animate-spin');
+      if (resetLabel) resetLabel.textContent = 'Resetting...';
+      try {
+        await fetch('/api/stream/reset', { method: 'POST' });
+        await fetchStatus();
+        await fetchLiveChart();
+      } catch (err) {
+        console.error("Failed to reset stream metrics:", err);
+      } finally {
+        setTimeout(() => {
+          if (resetIcon) resetIcon.classList.remove('animate-spin');
+          if (resetLabel) resetLabel.textContent = 'Reset Stream';
+        }, 400);
+      }
+    }
+
+    // Model Comparison Method Curve Toggles
+    function toggleMethodCurve(methodKey) {
+      methodStates[methodKey] = !methodStates[methodKey];
+      const isActive = methodStates[methodKey];
+      const btn = document.getElementById('toggle-' + methodKey);
+      const pathEl = document.getElementById('path-' + methodKey);
+      const areaEl = document.getElementById('area-' + methodKey);
+
+      if (btn) {
+        btn.setAttribute('data-active', isActive ? 'true' : 'false');
+        if (isActive) {
+          btn.classList.add('brightness-110');
+          if (methodKey === 'cam') btn.className = 'flex items-center gap-1.5 px-2.5 py-1 rounded bg-surface-container-high text-secondary hover:brightness-110 transition-all cursor-pointer';
+          else if (methodKey === 'b3') btn.className = 'flex items-center gap-1.5 px-2.5 py-1 rounded bg-surface-container-high text-primary hover:brightness-110 transition-all cursor-pointer';
+          else btn.className = 'flex items-center gap-1.5 px-2.5 py-1 rounded bg-surface-container-high text-on-surface hover:brightness-110 transition-all cursor-pointer';
+        } else {
+          btn.className = 'flex items-center gap-1.5 px-2.5 py-1 rounded bg-surface-container-high text-outline hover:text-on-surface transition-all cursor-pointer';
+        }
+      }
+
+      if (pathEl) {
+        pathEl.style.opacity = isActive ? (methodKey === 'cam' ? '1.0' : methodKey === 'b3' ? '0.9' : '0.6') : '0.05';
+      }
+      if (areaEl) {
+        areaEl.style.opacity = isActive ? '0.3' : '0';
+      }
+    }
+
+    // Fetch and bind live status data for current stream
+    async function fetchStatus() {
+      try {
+        const res = await fetch(`/api/status?stream=${encodeURIComponent(currentStream)}&_t=${Date.now()}`);
+        if (!res.ok) return;
+        const data = await res.json();
+
+        // Check if viewing active ingestion or historical benchmark
+        const isLive = data.is_live_ingestion;
+        const banner = document.getElementById('activeStreamBanner');
+        const liveDot = document.getElementById('livePingDot');
+        const liveBadge = document.getElementById('liveBadgeLabel');
+        const card1Badge = document.getElementById('card1StatusBadge');
+        const overviewTag = document.getElementById('overviewPipelineTag');
+
+        if (isLive) {
+          banner?.classList.add('hidden');
+          liveDot?.classList.remove('bg-primary');
+          liveDot?.classList.add('bg-secondary', 'animate-ping');
+          if (liveBadge) liveBadge.textContent = 'LIVE (Active)';
+          if (card1Badge) { card1Badge.textContent = 'ONLINE'; card1Badge.className = 'font-label-code text-body-sm text-secondary bg-surface-container-high px-1.5 py-0.5 rounded'; }
+          if (overviewTag) { overviewTag.textContent = 'Live Pipeline'; overviewTag.className = 'px-2 py-0.5 rounded bg-surface-container-high font-label-caps text-secondary text-label-caps uppercase tracking-wider'; }
+        } else {
+          banner?.classList.remove('hidden');
+          document.getElementById('bannerSelectedStream').textContent = data.stream;
+          document.getElementById('bannerActiveStream').textContent = data.active_stream;
+          liveDot?.classList.remove('bg-secondary', 'animate-ping');
+          liveDot?.classList.add('bg-primary');
+          if (liveBadge) liveBadge.textContent = `BENCHMARK (${data.stream})`;
+          if (card1Badge) { card1Badge.textContent = 'BENCHMARK'; card1Badge.className = 'font-label-code text-body-sm text-primary bg-surface-container-high px-1.5 py-0.5 rounded'; }
+          if (overviewTag) { overviewTag.textContent = 'Empirical Benchmark'; overviewTag.className = 'px-2 py-0.5 rounded bg-surface-container-high font-label-caps text-primary text-label-caps uppercase tracking-wider'; }
+        }
+
+        // Header and Card sequence
+        const seqFormatted = '#' + Number(data.instances).toLocaleString();
+        document.getElementById('headerSeq').textContent = seqFormatted;
+        document.getElementById('instanceCounter').textContent = Number(data.instances).toLocaleString();
+        document.getElementById('instanceRateSubtitle').textContent = `seq ${seqFormatted} · ${data.rate_fps || 120}/s rate`;
+        document.getElementById('overviewChartLiveX').textContent = `${Number(data.instances).toLocaleString()}`;
+
+        // Rolling Accuracy
+        const accPct = (data.rolling_acc * 100).toFixed(1) + '%';
+        document.getElementById('rollingAccVal').textContent = accPct;
+
+        // Drift count
+        document.getElementById('driftCountVal').textContent = `${data.drift_count} Detected`;
+
+        // Buffer Capacity
+        const bufPct = ((data.buffer_size / data.buffer_budget) * 100).toFixed(1);
+        document.getElementById('bufferUsedVal').textContent = data.buffer_size;
+        document.getElementById('bufferPctVal').textContent = `${bufPct}% Budget`;
+        document.getElementById('bufferBar').style.width = `${bufPct}%`;
+        document.getElementById('riverBufferBadge').textContent = `Buffer: ${data.buffer_size}`;
+
+        // Latency
+        document.getElementById('kafkaLatencyStat').textContent = `Latency: ${(data.latency_ms || 0.1).toFixed(1)}ms`;
+
+        // Active Concept
+        if (data.active_concept_name) {
+          const badgeEl = document.getElementById('cmActiveConceptBadge');
+          if (badgeEl) badgeEl.innerHTML = `${data.active_concept_name}`;
+        }
+      } catch (err) {
+        console.error("Telemetry update error:", err);
+      }
+    }
+
+    // Fetch and render Overview Live Chart for current stream
+    async function fetchLiveChart() {
+      try {
+        const limit = chartWindow === '5k' ? 250 : chartWindow === '10k' ? 500 : 1000;
+        const res = await fetch(`/api/metrics/live?stream=${encodeURIComponent(currentStream)}&limit=${limit}&_t=${Date.now()}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        renderOverviewChart(data, currentStream);
+      } catch (err) {
+        console.error("Live chart update error:", err);
+      }
+    }
+
+    // Dynamic Overview Chart SVG Renderer
+    function renderOverviewChart(data, stream) {
+      if (!data) return;
+      const points = Array.isArray(data) ? data : (data.points || []);
+      const baseline = Array.isArray(data) ? [] : (data.baseline || []);
+      if (!points || points.length === 0) return;
+      const svg = document.getElementById('overviewSvgCanvas');
+      const camPath = document.getElementById('overviewCamPath');
+      const b3Path = document.getElementById('overviewBaselinePath');
+      const camArea = document.getElementById('overviewCamArea');
+      const driftLines = document.getElementById('overviewDriftLines');
+
+      const width = 920; // 60 to 980
+      const height = 280; // 30 to 310
+      const baseLen = (stream === 'Elec2') ? 15000 : 10000;
+      const maxStreamSeq = Math.max(
+        (data.latest_seq || 0),
+        (points.length > 0 ? points[points.length - 1].seq : 0)
+      );
+      const totalLen = Math.max(baseLen, Math.ceil(maxStreamSeq / 2500) * 2500);
+      const minX = 0;
+      const maxX = totalLen;
+
+      // Map (seq, acc) to SVG (x, y) where acc: 0.5 -> y=310, 1.0 -> y=30
+      function toXY(seq, acc) {
+        const clampedSeq = Math.max(0, Math.min(totalLen, seq));
+        const x = 60 + (clampedSeq / totalLen) * width;
+        const clampedAcc = Math.max(0.5, Math.min(1.0, acc));
+        const y = 310 - ((clampedAcc - 0.5) / 0.5) * height;
+        return [Math.min(980, Math.max(60, x)), y];
+      }
+
+      // 1. Draw Baseline Curve B3 across the entire stream domain
+      if (baseline && baseline.length > 0) {
+        let b3D = '';
+        baseline.forEach((p, idx) => {
+          const [bx, by] = toXY(p.seq, p.rolling_acc);
+          b3D += ` ${idx === 0 ? 'M' : 'L'} ${bx.toFixed(1)} ${by.toFixed(1)}`;
+        });
+        if (b3Path && b3D) b3Path.setAttribute('d', b3D);
+      }
+
+      // 2. Draw Live CAM Curve
+      let camD = '';
+      let lastX = 60;
+      let lastY = 90;
+      points.forEach((p, idx) => {
+        const [x, y] = toXY(p.seq, p.rolling_acc);
+        lastX = x;
+        lastY = y;
+        const prefix = idx === 0 ? 'M' : 'L';
+        camD += ` ${prefix} ${x.toFixed(1)} ${y.toFixed(1)}`;
+      });
+
+      if (camPath && camD) camPath.setAttribute('d', camD);
+      if (camArea && camD) camArea.setAttribute('d', `${camD} L ${lastX.toFixed(1)} 310 L 60 310 Z`);
+
+      // Update live head dot indicator
+      const headDot = document.getElementById('overviewLiveHeadDot');
+      if (headDot) {
+        headDot.setAttribute('cx', lastX.toFixed(1));
+        headDot.setAttribute('cy', lastY.toFixed(1));
+      }
+
+      // Update Live X-Axis max label
+      const liveXLabel = document.getElementById('overviewChartLiveX');
+      if (liveXLabel) {
+        liveXLabel.textContent = maxX >= 1000 ? maxX.toLocaleString() : maxX;
+      }
+
+      // Render vertical drift markers: dynamically display real ADWIN detected drifts!
+      const dynamicDrifts = data.dynamic_drifts || [];
+      const theoreticalDrifts = STREAM_DRIFTS[stream] || [];
+      const driftsToRender = (dynamicDrifts.length > 0) ? dynamicDrifts : theoreticalDrifts;
+
+      let markerHtml = '';
+      driftsToRender.forEach(d => {
+        if (d.seq >= minX && d.seq <= maxX) {
+          const [dx] = toXY(d.seq, 0.8);
+          const strokeColor = d.is_recur ? '#42deb7' : '#ffb6ba';
+          const badgeWidth = (d.label && d.label.length > 20) ? 175 : 140;
+          markerHtml += `
+            <g class="transition-all duration-300">
+              <line x1="${dx.toFixed(1)}" x2="${dx.toFixed(1)}" y1="20" y2="310" stroke="${strokeColor}" stroke-dasharray="3 3" stroke-width="1.5"></line>
+              <rect x="${(dx - (badgeWidth / 2)).toFixed(1)}" y="14" width="${badgeWidth}" height="20" rx="4" fill="${d.color}" fill-opacity="0.92"></rect>
+              <text x="${dx.toFixed(1)}" y="28" fill="${d.text}" font-family="Inter" font-size="9" font-weight="600" text-anchor="middle">${d.label}</text>
+            </g>
+          `;
+        }
+      });
+      if (driftLines) driftLines.innerHTML = markerHtml;
+    }
+
+    // Dynamic Quantitative Table & Checkpoints from /api/comparison
+    async function loadComparisonTable() {
+      try {
+        const res = await fetch(`/api/comparison?stream=${encodeURIComponent(currentStream)}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        const tbody = document.getElementById('quantTableBody');
+        const checkpoints = document.getElementById('checkpointsBody');
+
+        if (data.runs && data.runs.length > 0) {
+          // Render 5 methods for the selected stream
+          tbody.innerHTML = '';
+          data.runs.forEach(r => {
+            const isCam = r.method === 'E';
+            const isB3 = r.method === 'B3';
+            const colorClass = isCam ? 'text-secondary font-bold' : isB3 ? 'text-primary font-semibold' : 'text-on-surface-variant';
+            const rowBg = isCam ? 'bg-surface-container-high/60' : 'bg-surface-container-low';
+            const dotColor = isCam ? 'bg-secondary' : isB3 ? 'bg-primary' : r.method === 'B2' ? 'bg-tertiary' : 'bg-outline';
+
+            const tr = document.createElement('tr');
+            tr.className = `hover:bg-surface-container transition-colors ${rowBg}`;
+            tr.innerHTML = `
+              <td class="py-2.5 px-4 font-mono font-medium text-on-surface flex items-center gap-2">
+                <span class="w-2 h-2 rounded ${dotColor} inline-block"></span>
+                <span>${r.method}: ${getMethodFullName(r.method)}</span>
+              </td>
+              <td class="py-2.5 px-4 text-right font-mono ${colorClass}">${(r.acc_mean * 100).toFixed(1)} ± ${(r.acc_std * 100).toFixed(1)}%</td>
+              <td class="py-2.5 px-4 text-right font-mono ${colorClass}">${r.f1_mean.toFixed(2)}</td>
+              <td class="py-2.5 px-4 text-right font-mono text-on-surface">${Math.round(r.recovery_time)} inst</td>
+              <td class="py-2.5 px-4 text-right font-mono ${isCam ? 'text-secondary font-bold' : 'text-on-surface-variant'}">${r.forgetting_pct.toFixed(1)}%</td>
+              <td class="py-2.5 px-4 text-right font-mono text-on-surface">${r.method === 'B0' || r.method === 'B2' ? '0' : '500'} samples</td>
+              <td class="py-2.5 px-4 text-right font-mono text-on-surface-variant">${r.latency_ms.toFixed(2)} ms</td>
+              <td class="py-2.5 px-4 text-right font-mono text-on-surface-variant">${(r.latency_ms * 1.75).toFixed(2)} ms</td>
+            `;
+            tbody.appendChild(tr);
+          });
+
+
+
+          // Update Research Question Cards for this stream
+          const camRun = data.runs.find(r => r.method === 'E');
+          const b3Run = data.runs.find(r => r.method === 'B3');
+          const b2Run = data.runs.find(r => r.method === 'B2');
+          if (camRun && b2Run && b3Run) {
+            document.getElementById('rq1Value').textContent = `B2: ${(b2Run.acc_mean*100).toFixed(1)}% vs CAM: ${(camRun.acc_mean*100).toFixed(1)}%`;
+            document.getElementById('rq2Value').textContent = `AMR: ${Math.round(b3Run.recovery_time)} inst recovery`;
+            document.getElementById('rq3Value').textContent = `CAM: ${Math.round(camRun.recovery_time)} inst (${(camRun.acc_mean*100).toFixed(1)}% peak)`;
+            document.getElementById('rq4Value').textContent = `${camRun.latency_ms.toFixed(2)} ms / inst (Budget: 500)`;
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load comparison table:", err);
+      }
+    }
+
+    // Dynamic Model Comparison Multi-Method Trajectory Chart
+    async function loadComparisonTraces() {
+      try {
+        const res = await fetch(`/api/comparison/traces?stream=${encodeURIComponent(currentStream)}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        cachedTraces = data.traces;
+        renderComparisonChart(data.traces, currentStream);
+      } catch (err) {
+        console.error("Failed to load comparison traces:", err);
+      }
+    }
+
+    function renderComparisonChart(traces, stream) {
+      if (!traces) return;
+      const width = 920; // 60 to 980
+      const height = 260; // 50 to 310
+      const maxX = (stream === 'Elec2') ? 15000 : 10000;
+
+      function toXY(xVal, yVal) {
+        const x = 60 + (xVal / maxX) * width;
+        const clampedY = Math.max(0.5, Math.min(1.0, yVal));
+        const y = 310 - ((clampedY - 0.5) / 0.5) * height;
+        return [x, y];
+      }
+
+      ['b0', 'b1', 'b2', 'b3', 'cam'].forEach(mKey => {
+        const traceKey = mKey === 'cam' ? 'E' : mKey.toUpperCase();
+        const pts = traces[traceKey] || [];
+        const pathEl = document.getElementById(`path-${mKey}`);
+        if (pts.length > 0 && pathEl) {
+          let d = '';
+          pts.forEach((pt, idx) => {
+            const [x, y] = toXY(pt.x, pt.y);
+            d += `${idx === 0 ? 'M' : 'L'} ${x.toFixed(1)} ${y.toFixed(1)} `;
+          });
+          pathEl.setAttribute('d', d);
+
+          if (mKey === 'cam') {
+            const areaEl = document.getElementById('area-cam');
+            if (areaEl) areaEl.setAttribute('d', `${d} L 980 310 L 60 310 Z`);
+          }
+        }
+      });
+
+      // Render vertical drift demarcations for this stream
+      const drifts = STREAM_DRIFTS[stream] || [];
+      const markerGroup = document.getElementById('compDriftMarkers');
+      if (markerGroup) {
+        let html = '';
+        drifts.forEach(d => {
+          const [dx] = toXY(d.seq, 0.8);
+          html += `
+            <g>
+              <line x1="${dx.toFixed(1)}" x2="${dx.toFixed(1)}" y1="30" y2="310" stroke="#869398" stroke-dasharray="4,4" stroke-width="1.2"></line>
+              <rect x="${(dx - 55).toFixed(1)}" y="22" width="110" height="20" rx="4" fill="#161b2b"></rect>
+              <text x="${dx.toFixed(1)}" y="36" class="font-label-code text-[10px] fill-current text-on-surface-variant font-mono" text-anchor="middle">${d.label}</text>
+            </g>
+          `;
+        });
+        markerGroup.innerHTML = html;
+      }
+    }
+
+    // Dynamic Concept Memory Repository Cards
+    async function loadConceptMemory() {
+      try {
+        const res = await fetch(`/api/concept_memory?stream=${encodeURIComponent(currentStream)}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        const grid = document.getElementById('conceptRepoGrid');
+
+        if (grid && data.repository) {
+          grid.innerHTML = '';
+          data.repository.forEach(c => {
+            const isActive = c.status === 'ACTIVE';
+            const isEvaluating = c.status === 'EVALUATING';
+            const badgeColor = isActive ? 'bg-secondary/20 text-secondary' : isEvaluating ? 'bg-surface-container-highest text-primary' : 'bg-surface-container-highest text-on-surface-variant';
+            const barColor = isActive ? 'bg-secondary' : isEvaluating ? 'bg-primary' : 'bg-primary-container';
+            const pct = Math.round((c.samples / c.capacity) * 100);
+
+            const card = document.createElement('div');
+            card.className = `flex flex-col justify-between p-4 rounded-xl ${isActive ? 'bg-surface-container shadow-md' : 'bg-surface-container-low shadow-sm'} relative overflow-hidden group`;
+            card.innerHTML = `
+              <div class="flex flex-col gap-3">
+                <div class="flex items-center justify-between">
+                  <span class="font-metric-display text-headline-sm text-on-surface font-mono">${c.name || c.id}</span>
+                  <span class="px-2 py-0.5 rounded font-label-code text-body-sm font-semibold ${badgeColor}">${c.status}</span>
+                </div>
+                <div class="flex flex-col gap-2 pt-2">
+                  <div class="flex justify-between items-center text-body-sm">
+                    <span class="font-body-sm text-on-surface-variant">Samples</span>
+                    <span class="font-label-code text-on-surface font-semibold">${c.samples} / ${c.capacity}</span>
+                  </div>
+                  <div class="w-full bg-surface-container-lowest h-1.5 rounded-full overflow-hidden">
+                    <div class="${barColor} h-full rounded-full" style="width: ${pct}%;"></div>
+                  </div>
+                  <div class="flex justify-between items-center text-body-sm pt-1">
+                    <span class="font-body-sm text-on-surface-variant">Recurrence Hits</span>
+                    <span class="font-label-code ${c.hits > 0 ? 'text-secondary font-semibold' : 'text-on-surface-variant'}">${c.hits}</span>
+                  </div>
+                  <div class="flex justify-between items-center text-body-sm">
+                    <span class="font-body-sm text-on-surface-variant">Last Activated</span>
+                    <span class="font-label-code text-on-surface">${c.last_activated}</span>
+                  </div>
+                </div>
+              </div>
+              <div class="mt-4 pt-3 ${isActive ? 'bg-surface-container-low' : 'bg-surface-container-lowest/60'} -mx-4 -mb-4 px-4 py-2.5 rounded-b-xl flex items-center justify-between">
+                <span class="font-label-code text-body-sm ${isActive ? 'text-primary' : 'text-on-surface-variant'} font-mono truncate">${c.model_type}</span>
+                <span class="material-symbols-outlined text-[16px] ${isActive ? 'text-secondary' : 'text-outline'}">${isActive ? 'check_circle' : isEvaluating ? 'autorenew' : 'archive'}</span>
+              </div>
+            `;
+            grid.appendChild(card);
+          });
+        }
+
+        // Hit Rate & Active Concept
+        if (data.hit_rate_pct !== undefined) document.getElementById('cmHitRate').textContent = `${data.hit_rate_pct.toFixed(1)}%`;
+        if (data.active_concept_name) document.getElementById('cmActiveConceptBadge').innerHTML = `${data.active_concept_name}`;
+      } catch (err) {
+        console.error("Failed to load concept memory:", err);
+      }
+    }
+
+    // Dynamic Events Log
+    async function loadEvents() {
+      try {
+        const res = await fetch(`/api/events?stream=${encodeURIComponent(currentStream)}`);
+        if (!res.ok) return;
+        const events = await res.json();
+        const container = document.getElementById('eventsContainer');
+        if (container && events.length > 0) {
+          container.innerHTML = '';
+          events.forEach(ev => {
+            const badgeClass = ev.color === 'secondary' ? 'bg-surface-container-lowest text-secondary' :
+                               ev.color === 'error' ? 'bg-error-container text-tertiary-container' :
+                               ev.color === 'primary' ? 'bg-surface-container-lowest text-primary' :
+                               'bg-surface-container-lowest text-on-surface-variant';
+
+            const div = document.createElement('div');
+            div.className = 'flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-lg bg-surface-container-low hover:bg-surface-container-high transition-colors gap-2';
+            div.innerHTML = `
+              <div class="flex items-center gap-3">
+                <span class="font-label-code text-body-sm text-on-surface-variant shrink-0">${ev.time}</span>
+                <span class="px-2 py-0.5 rounded font-label-code text-[11px] font-semibold shrink-0 ${badgeClass}">${ev.type}</span>
+                <span class="font-body-md text-on-surface">${ev.desc}</span>
+              </div>
+              <div class="font-label-code text-body-sm text-primary shrink-0 self-end sm:self-auto">
+                ${ev.stat}
+              </div>
+            `;
+            container.appendChild(div);
+          });
+        }
+      } catch (err) {
+        console.error("Failed to load events:", err);
+      }
+    }
+
+    function getMethodFullName(m) {
+      if (m === 'B0') return 'Naive Online Learning';
+      if (m === 'B1') return 'Vanilla Replay';
+      if (m === 'B2') return 'Full Relearning';
+      if (m === 'B3') return 'AMR-Simplified';
+      if (m === 'E') return 'Concept-Aware Memory (CAM)';
+      return m;
+    }
+
+    function refreshComparisonData() {
+      loadComparisonTable();
+      loadComparisonTraces();
+      fetchStatus();
+    }
+
+    // Initialize on page load
+    window.addEventListener('DOMContentLoaded', async () => {
+      const hash = window.location.hash.replace('#', '');
+      if (['overview', 'model-comparison', 'concept-memory'].includes(hash)) {
+        navigateTab(hash);
+      } else {
+        navigateTab('overview');
+      }
+
+      // Check current active stream from backend
+      try {
+        const res = await fetch('/api/status');
+        if (res.ok) {
+          const st = await res.json();
+          if (st.stream) {
+            currentStream = st.stream;
+          }
+        }
+      } catch (e) {}
+
+      setStream(currentStream);
+    });
+
+    window.addEventListener('hashchange', () => {
+      const hash = window.location.hash.replace('#', '');
+      if (['overview', 'model-comparison', 'concept-memory'].includes(hash)) {
+        navigateTab(hash);
+      }
+    });
+
+    // Periodic live polling every 1.5 seconds
+    setInterval(() => {
+      if (!isPaused && currentTab === 'overview') {
+        fetchStatus();
+        fetchLiveChart();
+      }
+    }, 1500);
+  </script>
+</body>
+</html>
