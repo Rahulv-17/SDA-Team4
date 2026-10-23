@@ -22,26 +22,71 @@ logger = logging.getLogger("Producer")
 
 
 def run_producer(stream_name: str, rate: float, seed: int, loop: bool, max_samples: int = None, topic: str = "stream.raw", broker_type: str = None):
-    logger.info(f"Starting Stream Producer: stream={stream_name}, rate={rate} msgs/s, seed={seed}, loop={loop}, topic={topic}")
+    from src.broker.control import get_control_state, set_control_state
+    
+    current_stream = stream_name
+    # Sync initial control state
+    set_control_state(stream=current_stream, broadcast_broker=False)
+    
+    logger.info(f"Starting Stream Producer: initial_stream={current_stream}, rate={rate} msgs/s, seed={seed}, loop={loop}, topic={topic}")
     producer = BrokerProducer(broker_type=broker_type)
     
     interval = (1.0 / rate) if rate > 0 else 0.0
     iteration = 0
     total_published = 0
     start_time = time.time()
+    last_reset_counter = get_control_state().get("reset_counter", 0)
+    last_control_check = 0.0
 
     try:
         while True:
             iteration += 1
-            gen = get_stream_generator(stream_name, seed=seed + iteration - 1, max_instances=max_samples)
+            gen = get_stream_generator(current_stream, seed=seed + iteration - 1, max_instances=max_samples)
+            switched_or_reset = False
+
             for msg in gen:
+                now = time.time()
+                # Fast periodic check of control state (every 50ms)
+                if now - last_control_check >= 0.05:
+                    last_control_check = now
+                    ctrl = get_control_state()
+
+                    # Handle pause state
+                    while ctrl.get("is_paused", False):
+                        time.sleep(0.08)
+                        ctrl = get_control_state()
+
+                    # Handle dynamic stream switch
+                    req_stream = ctrl.get("stream")
+                    if req_stream and req_stream != current_stream:
+                        logger.info(f"[STREAM SWITCH] Active stream changing from {current_stream} -> {req_stream}")
+                        current_stream = req_stream
+                        iteration = 0
+                        total_published = 0
+                        start_time = time.time()
+                        switched_or_reset = True
+                        break
+
+                    # Handle stream reset
+                    reset_cnt = ctrl.get("reset_counter", 0)
+                    if reset_cnt > last_reset_counter:
+                        last_reset_counter = reset_cnt
+                        logger.info(f"[STREAM RESET] Resetting stream generator for {current_stream}")
+                        iteration = 0
+                        total_published = 0
+                        start_time = time.time()
+                        switched_or_reset = True
+                        break
+
+                # Ensure msg has the active stream name
+                msg["stream"] = current_stream
                 producer.send(topic, msg)
                 total_published += 1
 
                 if total_published % 1000 == 0:
                     elapsed = time.time() - start_time
                     fps = total_published / elapsed if elapsed > 0 else 0
-                    logger.info(f"Published {total_published} messages ({fps:.1f} msgs/s) [latest seq: {msg['seq']}, concept: {msg.get('true_concept')}]")
+                    logger.info(f"Published {total_published} messages ({fps:.1f} msgs/s) [stream: {current_stream}, seq: {msg['seq']}, concept: {msg.get('true_concept')}]")
 
                 if max_samples and total_published >= max_samples:
                     break
@@ -49,10 +94,13 @@ def run_producer(stream_name: str, rate: float, seed: int, loop: bool, max_sampl
                 if interval > 0:
                     time.sleep(interval)
 
+            if switched_or_reset:
+                continue
+
             if not loop or (max_samples and total_published >= max_samples):
                 break
 
-            logger.info("Loop enabled: restarting stream cycle...")
+            logger.info(f"Loop enabled: restarting stream cycle for {current_stream}...")
 
     except KeyboardInterrupt:
         logger.info("Producer interrupted by user.")
@@ -62,6 +110,7 @@ def run_producer(stream_name: str, rate: float, seed: int, loop: bool, max_sampl
         elapsed = time.time() - start_time
         fps = total_published / elapsed if elapsed > 0 else 0
         logger.info(f"Producer finished: Published {total_published} messages in {elapsed:.2f}s ({fps:.1f} msgs/s)")
+
 
 
 def main():

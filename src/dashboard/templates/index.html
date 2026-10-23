@@ -277,14 +277,19 @@
           </div>
 
           <!-- Active Ingestion Notice Banner (Shows if user is viewing a different stream than active live stream) -->
-          <div id="activeStreamBanner" class="hidden flex items-center justify-between p-3 rounded-xl bg-surface-container-low border border-primary/30 font-label-code text-body-sm">
+          <div id="activeStreamBanner" class="hidden flex flex-wrap items-center justify-between p-3 rounded-xl bg-surface-container-low border border-primary/30 font-label-code text-body-sm gap-2">
             <div class="flex items-center gap-2.5">
               <span class="material-symbols-outlined text-primary text-[18px]">info</span>
-              <span>Viewing historical benchmark stream: <strong class="text-primary" id="bannerSelectedStream">STAGGER_recurring</strong>. Active broker stream is <strong class="text-secondary" id="bannerActiveStream">SEA_recurring</strong>.</span>
+              <span>Viewing stream: <strong class="text-primary" id="bannerSelectedStream">STAGGER_recurring</strong>. Active broker stream is <strong class="text-secondary" id="bannerActiveStream">SEA_recurring</strong>.</span>
             </div>
-            <button onclick="setStream(document.getElementById('bannerActiveStream').textContent)" class="px-2.5 py-1 rounded bg-surface-container-high hover:bg-surface-bright text-secondary text-[11px] font-semibold transition-colors">
-              Switch to Live Stream
-            </button>
+            <div class="flex items-center gap-2">
+              <button onclick="setStream(currentStream)" class="px-2.5 py-1 rounded bg-secondary/20 hover:bg-secondary/30 text-secondary text-[11px] font-semibold transition-colors">
+                Stream Live Now
+              </button>
+              <button onclick="setStream(document.getElementById('bannerActiveStream').textContent)" class="px-2.5 py-1 rounded bg-surface-container-high hover:bg-surface-bright text-on-surface-variant text-[11px] font-medium transition-colors">
+                View Active Stream
+              </button>
+            </div>
           </div>
 
           <!-- Metric Overview Cards: 4 Equal Columns -->

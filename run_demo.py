@@ -126,8 +126,16 @@ def main():
     else:
         print(f"[2/4] Dashboard already active on http://localhost:{args.port}. Reusing.")
 
+    # Initialize control state for dynamic stream switching
+    try:
+        from src.broker.control import set_control_state
+        set_control_state(stream=args.stream, method=args.method, broadcast_broker=False)
+    except Exception:
+        pass
+
     # 3. Start River Consumer
     print(f"[3/4] Starting River Streaming Consumer (Method: {args.method}, Stream: {args.stream})...")
+
     p_consumer = subprocess.Popen(
         [PYTHON_EXE, "src/consumer/consumer.py", "--stream", args.stream, "--method", args.method],
         cwd=str(PROJECT_ROOT)

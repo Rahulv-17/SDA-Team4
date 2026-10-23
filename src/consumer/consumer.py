@@ -73,10 +73,14 @@ def create_learner(method_name: str, config: dict = None) -> StreamLearner:
 def run_consumer(stream_name: str, method_name: str, max_samples: Optional[int] = None,
                  raw_topic: str = "stream.raw", metrics_topic: str = "stream.metrics",
                  broker_type: Optional[str] = None, auto_sink: bool = True):
-    logger.info(f"Starting Consumer: stream={stream_name}, method={method_name}, raw_topic={raw_topic}")
+    from src.broker.control import get_control_state
     
-    learner = create_learner(method_name)
-    consumer = BrokerConsumer(topic=raw_topic, broker_type=broker_type, group_id=f"consumer_{method_name}")
+    current_stream = stream_name
+    current_method = method_name
+    logger.info(f"Starting Consumer: initial_stream={current_stream}, method={current_method}, raw_topic={raw_topic}")
+    
+    learner = create_learner(current_method)
+    consumer = BrokerConsumer(topic=raw_topic, broker_type=broker_type, group_id=f"consumer_{current_method}")
     producer = BrokerProducer(broker_type=broker_type)
     sink = MetricsStorageSink() if auto_sink else None
 
@@ -88,9 +92,39 @@ def run_consumer(stream_name: str, method_name: str, max_samples: Optional[int] 
     drift_count = 0
     recurring_hits = 0
     start_time = time.time()
+    last_ctrl_check = 0.0
 
     try:
         for raw_msg in consumer.iter_messages(timeout=2.0):
+            now = time.time()
+            # Check control state for method updates
+            if now - last_ctrl_check >= 0.5:
+                last_ctrl_check = now
+                ctrl = get_control_state()
+                req_method = ctrl.get("method")
+                if req_method and req_method != current_method:
+                    logger.info(f"[CONSUMER METHOD SWITCH] Changing learner algorithm: {current_method} -> {req_method}")
+                    current_method = req_method
+                    learner = create_learner(current_method)
+                    rolling_acc = utils.Rolling(metrics.Accuracy, window_size=500)
+                    cumulative_acc = metrics.Accuracy()
+                    total_processed = 0
+                    drift_count = 0
+                    recurring_hits = 0
+
+            # Detect stream transition from message metadata
+            msg_stream = raw_msg.get("stream", current_stream)
+            if msg_stream != current_stream:
+                logger.info(f"[CONSUMER STREAM TRANSITION] Detected stream switch: {current_stream} -> {msg_stream}. Reinitializing learner for new distribution.")
+                current_stream = msg_stream
+                learner = create_learner(current_method)
+                rolling_acc = utils.Rolling(metrics.Accuracy, window_size=500)
+                cumulative_acc = metrics.Accuracy()
+                total_processed = 0
+                drift_count = 0
+                recurring_hits = 0
+                start_time = time.time()
+
             seq = raw_msg.get("seq", total_processed + 1)
             x = raw_msg.get("x", {})
             y = int(raw_msg.get("y", 0))
@@ -117,8 +151,8 @@ def run_consumer(stream_name: str, method_name: str, max_samples: Optional[int] 
             metric_msg = {
                 "seq": seq,
                 "ts": time.time(),
-                "method": method_name,
-                "stream": stream_name,
+                "method": current_method,
+                "stream": current_stream,
                 "y_true": y,
                 "y_pred": int(y_pred),
                 "rolling_acc": float(rolling_acc.get()),
@@ -139,7 +173,7 @@ def run_consumer(stream_name: str, method_name: str, max_samples: Optional[int] 
                 elapsed = time.time() - start_time
                 fps = total_processed / elapsed if elapsed > 0 else 0
                 logger.info(
-                    f"Processed {total_processed} instances ({fps:.1f} inst/s) | "
+                    f"Processed {total_processed} instances ({fps:.1f} inst/s) [stream: {current_stream}] | "
                     f"Rolling Acc: {rolling_acc.get():.3f} | Cumulative Acc: {cumulative_acc.get():.3f} | "
                     f"Drifts: {drift_count} | Hits: {recurring_hits} | Latency: {latency_ms:.2f}ms"
                 )
